@@ -488,8 +488,29 @@
   .open-ext:hover { background: rgba(0,0,0,0.06); color: var(--accent); }
   .s3-device, .s5-device { position: relative; }
   .device-macbook .device-frame { background: #fff; }
-  .device-macbook .device-frame .device-titlebar { flex: 0 0 auto; }
-  .device-macbook .device-frame iframe { flex: 1 1 0; min-height: 0; width: 100%; border: 0; }
+  /* Iframe zoom-out wrapper: iframe renders at higher logical resolution,
+     then we scale it back down so the website looks "small but sharp" inside
+     the MacBook screen — closer to a real Retina display feel than a
+     zoomed-in browser. */
+  .device-macbook .device-frame .iframe-zoom-wrap {
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+  }
+  .device-macbook .device-frame .iframe-zoom-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 166.67%;       /* 1 / 0.6 */
+    height: 166.67%;
+    border: 0;
+    transform: scale(0.6);
+    transform-origin: top left;
+  }
+  .device-macbook .device-frame iframe:not(.iframe-zoom-wrap iframe) {
+    flex: 1 1 0; min-height: 0; width: 100%; border: 0;
+  }
   .device-macbook .device-frame .scr-frame {
     flex: 1 1 0; min-height: 0;
     display: flex; flex-direction: column;
@@ -833,15 +854,12 @@
       <div class="section-stage reveal-stage">
       <div class="device device-macbook device-spacegray scale-macbook s3-device">
         <div class="device-frame">
-          <div class="device-titlebar">
-            <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
-            <div class="tl-title">taoreunda.github.io · <span class="tl-tag">bdpi-presentation</span></div>
-            <a href="https://taoreunda.github.io/bdpi-presentation/" target="_blank" rel="noopener" class="open-ext" title="새 창에서 열기">↗</a>
+          <div class="iframe-zoom-wrap">
+            <iframe
+              src="https://taoreunda.github.io/bdpi-presentation/"
+              title="BDPI Presentation"
+              referrerpolicy="no-referrer"></iframe>
           </div>
-          <iframe
-            src="https://taoreunda.github.io/bdpi-presentation/"
-            title="BDPI Presentation"
-            referrerpolicy="no-referrer"></iframe>
         </div>
         <div class="device-stripe"></div>
         <div class="device-header"></div>
@@ -916,10 +934,6 @@
       <div class="section-stage reveal-stage">
       <div class="device device-macbook device-spacegray scale-macbook s5-device">
         <div class="device-frame">
-          <div class="device-titlebar">
-            <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
-            <div class="tl-title">Dabom · <span class="tl-tag">localhost:8501/chat</span></div>
-          </div>
           <div class="scr-frame">
             <div class="scr-head">
               <div class="logo">Dabom <span class="sub">SOCIAL ISOLATION ASSESSMENT</span></div>
