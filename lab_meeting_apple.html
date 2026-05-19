@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lab Meeting · 2026.05.19</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<style>
+  :root {
+    /* === Apple Design Tokens (see design.md) === */
+    --bg: #ffffff;             /* canvas */
+    --bg-alt: #f5f5f7;         /* parchment */
+    --bg-dark: #272729;        /* tile-1 */
+    --bg-dark-2: #2a2a2c;      /* tile-2 */
+    --bg-dark-3: #252527;      /* tile-3 */
+    --bg-black: #000000;       /* surface-black, nav */
+    --pearl: #fafafc;
+    --text: #1d1d1f;           /* ink */
+    --text-light: #ffffff;
+    --text-mid: #6e6e73;
+    --text-quiet: #86868b;
+    --text-muted-dark: #cccccc;
+    --accent: #0066cc;         /* Action Blue */
+    --accent-hover: #0077e6;
+    --accent-focus: #0071e3;
+    --accent-dark: #2997ff;    /* Sky Link Blue on dark */
+    --hairline: #e0e0e0;
+    --divider-soft: #f0f0f0;
+    --border: rgba(0,0,0,0.1);
+    --border-soft: rgba(0,0,0,0.06);
+    --border-dark: rgba(255,255,255,0.1);
+    --shadow-product: 3px 5px 30px rgba(0,0,0,0.22);
+    --shadow-lg: 0 30px 80px rgba(0,0,0,0.12);
+    --shadow-xl: 0 60px 120px -20px rgba(0,0,0,0.15);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-io: cubic-bezier(0.4, 0, 0.2, 1);
+    --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+    --body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    --mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
+    --korean: "Pretendard Variable", Pretendard, var(--body);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--korean);
+    font-size: 17px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  /* === Nav === */
+  nav.topnav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 48px; padding: 0 32px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px;
+  }
+  .brand { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; color: var(--text); transition: color 0.4s; }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a { color: var(--text-mid); text-decoration: none; font-weight: 400; font-size: 12px; transition: color 0.25s var(--ease); font-family: var(--korean); }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+  /* === Hero — Apple style massive === */
+  .hero {
+    min-height: 100vh; padding: 160px 32px 120px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-alt) 100%);
+    position: relative; overflow: hidden;
+  }
+  .hero-eyebrow {
+    font-family: var(--display);
+    font-size: 22px;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 28px;
+    letter-spacing: -0.01em;
+  }
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(56px, 8.4vw, 124px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    margin: 0 0 36px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .hero-title .accent { margin-left: 0.18em; }
+  .hero-title .x-sym {
+    display: inline-block;
+    color: var(--text-mid);
+    font-weight: 400;
+    margin: 0 0.16em;
+    transform: translateY(-0.04em);
+    font-size: 0.75em;
+  }
+  .hero-title .accent {
+    background: linear-gradient(135deg, #0071e3 0%, #5ac8fa 40%, #ff375f 90%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradShift 10s ease-in-out infinite;
+  }
+  @keyframes gradShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .hero-sub {
+    font-family: var(--display);
+    font-size: clamp(22px, 2.5vw, 30px);
+    color: var(--text-mid);
+    max-width: 880px; margin: 0 auto;
+    line-height: 1.25; font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .hero-meta {
+    margin-top: 64px; font-size: 13px;
+    color: var(--text-quiet); font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: var(--text-quiet); letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 500;
+  }
+  .scroll-hint::after {
+    content: ''; display: block; width: 1px; height: 32px;
+    background: var(--text-quiet); margin: 10px auto 0;
+    animation: scrollDown 2.4s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes scrollDown { 0%, 100% { transform: scaleY(0); opacity: 0; } 50% { transform: scaleY(1); opacity: 1; } }
+
+  /* === Section — Apple product tile, fits one viewport === */
+  section.slide {
+    padding: 72px 40px 60px;
+    height: 100vh;
+    min-height: 720px;
+    scroll-margin-top: 48px;
+    position: relative;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+  }
+  section.slide.alt { background: var(--bg-alt); }
+
+  .section-inner {
+    max-width: 1280px; margin: 0 auto;
+    width: 100%; height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 32px;
+    align-items: stretch;
+  }
+
+  .section-head {
+    text-align: center;
+    max-width: 980px; margin: 0 auto;
+  }
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 14px;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 14px;
+    letter-spacing: -0.224px;
+  }
+
+  /* display-lg per design.md */
+  h1.title {
+    font-family: var(--display);
+    font-size: clamp(34px, 3.6vw, 44px);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.374px;
+    margin: 0 0 12px;
+    color: inherit;
+  }
+  h1.title .accent { color: var(--accent); }
+
+  .subtitle {
+    font-family: var(--display);
+    font-size: 17px;
+    color: var(--text-mid);
+    margin: 0;
+    font-weight: 400;
+    letter-spacing: -0.374px;
+    line-height: 1.47;
+  }
+
+  /* Body — 2-column: device on one side, meta cards stacked on the other */
+  .section-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: 56px;
+    align-items: center;
+    min-height: 0;
+  }
+  section.slide:nth-of-type(even) .section-body {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  }
+  section.slide:nth-of-type(even) .section-stage { order: 2; }
+  section.slide:nth-of-type(even) .section-meta { order: 1; }
+  /* Wide-device sections (desktop-shape) — give device column more weight */
+  section#s3 .section-body { grid-template-columns: minmax(0, 0.35fr) minmax(0, 1.65fr) !important; }
+  section#s5 .section-body { grid-template-columns: minmax(0, 0.35fr) minmax(0, 1.65fr) !important; }
+  section#s6 .section-body { grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.7fr) !important; }
+  /* S3 & S5 need a bigger device — tighter section padding + 4:3 aspect */
+  section#s3, section#s5 { padding: 56px 40px 44px; }
+  section#s3 .device-frame.desktop-shape,
+  section#s5 .device-frame.desktop-shape {
+    aspect-ratio: 4 / 3;
+    max-height: min(70vh, 720px);
+  }
+
+  .section-stage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0; height: 100%;
+  }
+
+  /* Section meta — cards stacked vertically */
+  .section-meta {
+    display: flex; flex-direction: column;
+    gap: 18px;
+    align-self: stretch; justify-content: center;
+    text-align: left;
+    min-height: 0;
+  }
+  .meta-item {
+    flex: 0 0 auto;
+    border-top: 1px solid var(--hairline);
+    padding: 18px 0 0;
+  }
+  .meta-h {
+    font-family: var(--display);
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: 0.231px;
+    color: inherit;
+    margin: 0 0 6px;
+    line-height: 1.19;
+  }
+  .meta-d {
+    font-size: 15px;
+    color: var(--text-mid);
+    line-height: 1.47;
+    letter-spacing: -0.224px;
+  }
+  .meta-d code, .meta-d .mono {
+    font-family: var(--mono); font-size: 13.5px;
+    background: rgba(0,0,0,0.05);
+    padding: 1px 7px; border-radius: 5px;
+    color: var(--text);
+  }
+
+  /* === Device frame === */
+  .device-frame {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-product);
+    transition: transform 0.8s var(--ease);
+    margin: 0 auto;
+    width: 100%;
+    max-width: 720px;
+    max-height: min(72vh, 720px);
+  }
+
+  /* === iMessage-style bubble chat for S1 === */
+  .chat-head {
+    flex: 0 0 auto;
+    padding: 22px 24px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    background: #fff;
+  }
+  .chat-wordmark {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    text-align: center;
+  }
+  .chat-content {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex; flex-direction: column;
+    background: #fff;
+    overflow: hidden;
+  }
+  .mem-legend {
+    flex: 0 0 auto;
+    display: flex; justify-content: center;
+    gap: 14px; padding: 4px 18px 12px;
+    font-size: 11px; color: var(--text-mid);
+  }
+  .mem-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .mem-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .chat-body {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 18px 8px;
+    display: flex; flex-direction: column; gap: 6px;
+    background: #fff;
+  }
+  .chat-body::-webkit-scrollbar { width: 4px; }
+  .chat-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+  .bubble {
+    max-width: 78%;
+    padding: 9px 14px;
+    border-radius: 18px;
+    font-size: 14px; line-height: 1.42;
+    font-family: var(--korean);
+    animation: bubbleIn 0.45s var(--ease);
+  }
+  @keyframes bubbleIn { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .bubble.assistant {
+    background: #e9e9eb; color: #1d1d1f;
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .bubble.user {
+    background: #007aff; color: #fff;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  .bubble.system {
+    align-self: center;
+    background: transparent; color: #86868b;
+    font-size: 11.5px; padding: 4px 10px;
+    font-family: var(--mono); letter-spacing: 0.02em;
+  }
+  .bubble.typing { padding: 10px 16px; }
+  .bubble.typing .typing-dots { display: inline-flex; gap: 4px; }
+  .bubble.typing .typing-dots span { width: 6px; height: 6px; background: #86868b; border-radius: 50%; animation: dots 1.2s infinite; }
+  .bubble.typing .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .bubble.typing .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  .bubble .cursor { display: inline-block; width: 5px; height: 0.9em; background: currentColor; vertical-align: -2px; animation: cursor 1s infinite step-end; margin-left: 1px; opacity: 0.7; }
+  .bubble.done .cursor { display: none; }
+  .chat-play {
+    flex: 0 0 auto;
+    align-self: center;
+    margin: 4px 0 8px;
+    padding: 6px 14px;
+    background: transparent; color: var(--accent);
+    border: 0; border-radius: 9999px;
+    font-family: var(--display); font-size: 13px; font-weight: 400;
+    cursor: pointer;
+    letter-spacing: -0.224px;
+    transition: opacity 0.25s var(--ease), transform 0.2s var(--ease);
+  }
+  .chat-play:hover { opacity: 0.7; }
+  .chat-play:active { transform: scale(0.95); }
+  .chat-play:disabled { opacity: 0.4; cursor: default; }
+  .chat-input {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px 18px;
+    background: #fff; border-top: 1px solid var(--border-soft);
+  }
+  .chat-input input {
+    flex: 1; min-width: 0;
+    background: var(--bg-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 980px;
+    padding: 10px 16px;
+    font-family: var(--korean); font-size: 14px;
+    color: var(--text); outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .chat-input input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,0.12); }
+  .chat-input .send {
+    width: 36px; height: 36px;
+    background: var(--accent); color: #fff;
+    border: 0; border-radius: 50%;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .chat-input .send:hover { background: var(--accent-hover); transform: scale(1.06); }
+
+  /* Chat-window proportions for Dabom TUI windows */
+  .device-frame.chat-shape {
+    height: 100%;
+    max-height: min(80vh, 800px);
+    aspect-ratio: 9 / 18;
+    width: auto;
+    display: flex; flex-direction: column;
+    border-radius: 36px;
+    box-shadow: var(--shadow-product);
+    border: 0;
+  }
+  /* S2 needs a wider chat shape so 8 score chips fit on a single line */
+  section#s2 .device-frame.chat-shape { aspect-ratio: 11 / 18; }
+  .device-frame.chat-shape .mem-graph { flex: 0 0 auto; height: 220px; margin: 12px 14px 6px; }
+  .device-frame.chat-shape .chat-body { padding: 10px 14px 6px; gap: 5px; }
+  .device-frame.chat-shape .bubble { font-size: 13px; padding: 7px 12px; max-width: 86%; }
+  .device-frame.chat-shape .mem-legend { padding: 2px 12px 8px; font-size: 10px; gap: 10px; }
+  .device-frame.chat-shape .score-bar.amt {
+    display: flex; flex-wrap: nowrap; gap: 0 8px;
+    padding: 10px 12px 12px; margin: 4px 0 0;
+    border-top: 1px solid var(--border-soft);
+    background: transparent;
+    flex: 0 0 auto;
+    justify-content: center; align-items: center;
+    font-size: 10.5px;
+    white-space: nowrap; overflow: hidden;
+  }
+  .score-bar.amt .s { display: inline-flex; align-items: center; gap: 4px; transition: all 0.4s var(--ease); font-size: 10.5px; }
+  .score-bar.amt .s::before { content: '○'; font-size: 9px; margin-right: 1px; color: currentColor; }
+  .score-bar.amt .s.done::before { content: '●'; }
+  .score-bar.amt .s.wait { opacity: 0.35; color: var(--text-quiet); }
+  .score-bar.amt .s.scoring { animation: scorePulse 0.7s var(--ease); }
+  @keyframes scorePulse { 0% { transform: scale(1); } 45% { transform: scale(1.3); filter: brightness(1.2); } 100% { transform: scale(1); } }
+  .score-bar.amt .s[data-c="subj"].done { color: #86868b; }
+  .score-bar.amt .s[data-c="time"].done { color: #007aff; }
+  .score-bar.amt .s[data-c="place"].done { color: #00c7be; }
+  .score-bar.amt .s[data-c="event"].done { color: #34c759; }
+  .score-bar.amt .s[data-c="emo"].done { color: #ff3b30; }
+  .score-bar.amt .s[data-c="think"].done { color: #af52de; }
+  .score-bar.amt .s[data-c="ppl"].done { color: #af52de; }
+  .score-bar.amt .s[data-c="sense"].done { color: #ff9500; }
+
+  /* Desktop computer screen aspect (16:10) */
+  .device-frame.desktop-shape {
+    width: 100%;
+    max-width: none;
+    aspect-ratio: 16 / 10;
+    max-height: min(80vh, 800px);
+    display: flex; flex-direction: column;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-product);
+    border: 0;
+  }
+  .open-ext {
+    color: var(--text-mid); text-decoration: none;
+    font-size: 14px; padding: 2px 8px;
+    border-radius: 6px; transition: all 0.2s var(--ease);
+  }
+  .open-ext:hover { background: rgba(0,0,0,0.06); color: var(--accent); }
+  /* Clickable overlay on iframe so users can click to open in new tab */
+  .s3-device, .s5-device { position: relative; }
+  .device-frame.desktop-shape .device-titlebar { flex: 0 0 auto; }
+  .device-frame.desktop-shape iframe { flex: 1 1 0; min-height: 0; }
+  .device-frame.desktop-shape .scr-frame {
+    flex: 1 1 0; min-height: 0;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .device-frame.desktop-shape .scr-head { flex: 0 0 auto; }
+  .device-frame.desktop-shape .scr-body { flex: 1 1 0; min-height: 0; }
+  .device-frame.desktop-shape .scr-controls { flex: 0 0 auto; }
+
+  /* ML Pipeline diagram (landscape image) */
+  .device-frame.pipeline-shape {
+    width: 100%;
+    max-width: none;
+    aspect-ratio: 1376 / 768;
+    max-height: min(70vh, 700px);
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    display: block;
+    overflow: visible;
+  }
+  .device-frame.pipeline-shape .pipeline-image {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* A4 portrait for BDPI report image */
+  .device-frame.a4-shape {
+    height: 100%;
+    max-height: min(78vh, 760px);
+    aspect-ratio: 210 / 297;
+    width: auto; max-width: none;
+    display: block;
+    border-radius: 6px;
+    box-shadow: var(--shadow-product);
+    border: 0;
+    overflow: hidden;
+    background: #fff;
+  }
+  .device-frame.a4-shape .a4-image {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: top center;
+    display: block;
+  }
+  .device-titlebar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(180deg, #fafafa, #f0f0f0);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    font-family: var(--mono); font-size: 12px;
+    color: var(--text-mid);
+  }
+  .tl-dots { display: flex; gap: 8px; }
+  .tl-dot { width: 12px; height: 12px; border-radius: 50%; background: #d4d4d4; }
+  .tl-dot.r { background: #ff5f57; }
+  .tl-dot.y { background: #febc2e; }
+  .tl-dot.g { background: #28c840; }
+  .tl-title { flex: 1; text-align: center; color: var(--text-mid); font-weight: 500; }
+  .tl-tag { color: var(--text-quiet); }
+
+  @keyframes cursor { 50% { opacity: 0; } }
+  @keyframes dots { 0%, 60%, 100% { opacity: 0.25; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+  .mem-graph {
+    flex: 0 0 auto;
+    position: relative; height: 260px;
+    background: var(--bg-alt);
+    margin: 14px 18px 8px; border-radius: 14px; overflow: hidden;
+  }
+  .mem-graph svg { width: 100%; height: 100%; }
+  .mem-graph .node text { font-family: var(--display); font-size: 13px; fill: var(--text); pointer-events: none; font-weight: 500; }
+  .mem-graph .link { stroke: rgba(0,0,0,0.2); stroke-width: 1.2; }
+
+  /* === Screening (light Streamlit-like) === */
+  .scr-frame {
+    --s-primary: #007aff; --s-bg: #f5f5f7; --s-card: #ffffff;
+    --s-border: rgba(0,0,0,0.08); --s-text: #1d1d1f; --s-mid: #6e6e73;
+    --s-bot: #f5f5f7; --s-user: #007aff;
+    --s-success: #34c759; --s-success-bg: #e5f5ea;
+    --s-fail: #ff9500; --s-fail-bg: #fff4e6;
+    background: var(--s-bg); color: var(--s-text); font-family: var(--korean);
+  }
+  .scr-head { padding: 14px 22px; background: var(--s-card); border-bottom: 1px solid var(--s-border); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .scr-head .logo { font-weight: 700; color: var(--s-primary); font-size: 15px; }
+  .scr-head .logo .sub { font-size: 10px; letter-spacing: 1.5px; color: var(--s-mid); font-weight: 400; margin-left: 6px; }
+  .scr-head .badges { display: flex; gap: 8px; }
+  .scr-head .ub { padding: 5px 12px; border: 1px solid var(--s-border); border-radius: 980px; font-size: 11px; color: var(--s-mid); cursor: pointer; }
+  .scr-head .ub.active { color: var(--s-primary); border-color: var(--s-primary); background: rgba(0,122,255,0.05); }
+  .scr-body { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; padding: 16px; min-height: 380px; }
+  .scr-chat { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 380px; font-size: 13px; }
+  .scr-msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; line-height: 1.45; animation: msgIn 0.55s var(--ease); }
+  @keyframes msgIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .scr-msg.bot { background: var(--s-bot); align-self: flex-start; border-bottom-left-radius: 4px; color: var(--s-text); }
+  .scr-msg.user { background: var(--s-user); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .scr-typing { background: var(--s-bot); align-self: flex-start; border-radius: 18px; padding: 10px 16px; }
+  .scr-typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--s-mid); margin: 0 1px; animation: dots 1.2s infinite; }
+  .scr-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .scr-typing span:nth-child(3) { animation-delay: 0.4s; }
+  .scr-scorecard { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 14px; padding: 16px; overflow-y: auto; max-height: 380px; font-size: 13px; }
+  .sc-progress { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 14px; }
+  .sc-progress .label { color: var(--s-text); font-weight: 600; }
+  .sc-progress .bar { flex: 1; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
+  .sc-progress .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--s-primary), var(--s-success)); transition: width 0.7s var(--ease); }
+  .sc-progress .pct { color: var(--s-mid); font-family: var(--mono); font-size: 11px; }
+  .sc-criteria { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .sc-crit { border: 1px solid var(--s-border); border-radius: 12px; padding: 10px 14px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: all 0.5s var(--ease); }
+  .sc-crit .nm { font-weight: 600; }
+  .sc-crit .st { font-size: 10.5px; padding: 2px 10px; border-radius: 980px; font-weight: 600; }
+  .sc-crit.wait .st { background: rgba(0,0,0,0.06); color: var(--s-mid); }
+  .sc-crit.met { background: var(--s-success-bg); border-color: rgba(52,199,89,0.3); }
+  .sc-crit.met .st { background: var(--s-success); color: #fff; }
+  .sc-crit.unmet { background: var(--s-fail-bg); border-color: rgba(255,149,0,0.3); }
+  .sc-crit.unmet .st { background: var(--s-fail); color: #fff; }
+  .sc-items { display: flex; flex-direction: column; gap: 8px; }
+  .sc-item { background: #fafbfc; border: 1px solid var(--s-border); border-radius: 10px; padding: 10px 12px; font-size: 11px; line-height: 1.5; animation: msgIn 0.5s var(--ease); }
+  .sc-item .code { font-weight: 700; color: var(--s-primary); margin-right: 8px; }
+  .sc-item .q { color: var(--s-text); }
+  .sc-item .ans { color: var(--s-mid); font-style: italic; margin-top: 4px; }
+  .sc-item .verdict { display: inline-block; margin-top: 5px; padding: 2px 8px; border-radius: 980px; font-size: 9.5px; }
+  .sc-item .verdict.met { background: var(--s-success); color: #fff; }
+  .sc-item .verdict.unmet { background: var(--s-fail); color: #fff; }
+  .scr-controls { padding: 14px 16px; border-top: 1px solid var(--s-border); display: flex; gap: 10px; justify-content: flex-end; background: var(--s-card); }
+  .scr-controls button { padding: 8px 18px; border: 1px solid var(--s-primary); background: #fff; color: var(--s-primary); border-radius: 980px; font-size: 13px; cursor: pointer; font-family: var(--korean); font-weight: 500; transition: all 0.25s var(--ease); }
+  .scr-controls button.primary { background: var(--s-primary); color: #fff; }
+  .scr-controls button:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,122,255,0.2); }
+  .scr-controls button.playing { background: var(--s-fail); border-color: var(--s-fail); color: #fff; }
+
+  /* === Apple-style scroll reveal (scale + fade + translate) === */
+  .show-all .reveal-head, .show-all .reveal-stage, .show-all .reveal-meta > * { opacity: 1 !important; transform: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-head, .reveal-stage, .reveal-meta > * { opacity: 1 !important; transform: none !important; }
+    .hero-title { animation: none !important; }
+  }
+  .reveal-head {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 1.1s var(--ease), transform 1.1s var(--ease);
+  }
+  .reveal-head.in-view { opacity: 1; transform: translateY(0); }
+  .reveal-stage {
+    opacity: 0; transform: translateY(80px) scale(0.94);
+    transition: opacity 1.4s var(--ease), transform 1.4s var(--ease);
+  }
+  .reveal-stage.in-view { opacity: 1; transform: translateY(0) scale(1); }
+  .reveal-meta > * {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+  }
+  .reveal-meta.in-view > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+  .reveal-meta.in-view > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.22s; }
+  .reveal-meta.in-view > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.34s; }
+
+  footer.foot { padding: 64px 32px; text-align: center; border-top: 1px solid var(--border); color: var(--text-quiet); font-size: 12.5px; font-weight: 500; background: var(--bg); }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .restart-link {
+    background: transparent; border: 0;
+    color: var(--accent); font-size: 13px; font-weight: 400;
+    font-family: var(--display);
+    padding: 6px 14px; cursor: pointer;
+    border-radius: 9999px; letter-spacing: -0.224px;
+    box-shadow: none;
+  }
+  .restart-link:hover { opacity: 0.7; }
+  .restart-link:active { transform: scale(0.95); }
+
+  @media (max-width: 980px) {
+    section.slide { padding: 100px 22px; }
+    .section-inner { gap: 48px; }
+    .section-meta { grid-template-columns: 1fr; gap: 28px; }
+    nav.topnav { padding: 0 18px; }
+    .nav-links { display: none; }
+    .scr-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav" id="topnav">
+  <div class="brand">Lab Meeting</div>
+  <div class="nav-links">
+    <a href="#s1">다봄</a>
+    <a href="#s2">AMT 채점</a>
+    <a href="#s3">성격 평가</a>
+    <a href="#s4">BDPI 보고서</a>
+    <a href="#s5">스크리닝</a>
+    <a href="#s6">우울 분류</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">Lab Meeting · 2026.05.19</div>
+  <h1 class="hero-title">Psychology<span class="x-sym">×</span><span class="accent">AI.</span></h1>
+  <p class="hero-sub">다봄. AMT 채점. 성격 평가. BDPI 보고서. 스크리닝. 우울 분류.</p>
+  <div class="hero-meta">SCROLL TO EXPLORE</div>
+  <div class="scroll-hint">START</div>
+</section>
+
+<!-- ============ S1 : DABOM ============ -->
+<section id="s1" class="slide alt">
+  <div class="section-inner">
+    <header class="section-head reveal-head">
+      <div class="eyebrow">01 — 온디바이스 AI · 다봄</div>
+      <h1 class="title">모바일 속 <span class="accent">다봄이.</span></h1>
+      <p class="subtitle">On-Device LLM · Autobiographical Memory Training</p>
+    </header>
+
+    <div class="section-body">
+      <div class="section-stage reveal-stage">
+      <div class="device-frame chat-shape">
+        <div class="chat-head">
+          <div class="chat-wordmark">DABOM</div>
+        </div>
+        <div class="chat-content">
+          <div class="mem-graph">
+            <svg id="mem-svg"></svg>
+          </div>
+          <div class="mem-legend">
+            <span><i style="background:#ff9500"></i>단서</span>
+            <span><i style="background:#007aff"></i>시간</span>
+            <span><i style="background:#00c7be"></i>공간</span>
+            <span><i style="background:#34c759"></i>사건</span>
+            <span><i style="background:#af52de"></i>인물</span>
+          </div>
+          <div class="chat-body" id="s1-body"></div>
+          <button class="chat-play restart" id="s1-play">↻ 다시 보기</button>
+        </div>
+        <div class="chat-input">
+          <input id="s1-input" placeholder="메시지 입력" autocomplete="off" />
+          <button class="send" id="s1-send" aria-label="send">↑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-meta reveal-meta">
+      <div class="meta-item">
+        <div class="meta-h">Local LLM</div>
+        <div class="meta-d"><span class="mono">Gemma 4</span> · 모바일·노트북 On-Device</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">개인정보 보호</div>
+        <div class="meta-d">외부 API 무의존</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">Graph RAG</div>
+        <div class="meta-d">LightRAG · 한국어 임베딩 + 지식 검색</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">LLM-Wiki</div>
+        <div class="meta-d">LLM이 만드는 Wiki</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S2 : AMT ============ -->
+<section id="s2" class="slide">
+  <div class="section-inner">
+    <header class="section-head reveal-head">
+      <div class="eyebrow">02 — LLM · AMT 자동 채점</div>
+      <h1 class="title">로컬 Gemma 파인튜닝으로<br/><span class="accent">AMT 자동 채점.</span></h1>
+      <p class="subtitle">AMT (Autobiographical Memory Test) Auto-Scoring · On-Device</p>
+    </header>
+
+    <div class="section-body">
+      <div class="section-stage reveal-stage">
+      <div class="device-frame chat-shape">
+        <div class="chat-head">
+          <div class="chat-wordmark">DABOM <span style="color:var(--text-quiet);font-weight:400;letter-spacing:0.15em;font-size:12px;margin-left:6px">TRAINING · cue "커피"</span></div>
+        </div>
+        <div class="chat-content">
+          <div class="chat-body" id="s2-body">
+            <div class="bubble assistant done">'커피'와 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>
+          </div>
+          <div class="score-bar amt" id="s2-scores">
+            <span class="s wait" data-c="subj">주관경험</span>
+            <span class="s wait" data-c="time">시간</span>
+            <span class="s wait" data-c="place">공간</span>
+            <span class="s wait" data-c="event">사건</span>
+            <span class="s wait" data-c="emo">감정</span>
+            <span class="s wait" data-c="think">생각</span>
+            <span class="s wait" data-c="ppl">인물</span>
+            <span class="s wait" data-c="sense">감각</span>
+          </div>
+          <button class="chat-play restart" id="s2-run">↻ 다시 보기</button>
+        </div>
+        <div class="chat-input">
+          <input id="s2-input" placeholder="기억을 입력하세요" autocomplete="off" disabled />
+          <button class="send" aria-label="send" disabled>↑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-meta reveal-meta">
+      <div class="meta-item">
+        <div class="meta-h">로컬에서 직접 학습</div>
+        <div class="meta-d">성능 향상 목적 · LoRA fine-tuning</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">모바일 다봄의 심장</div>
+        <div class="meta-d">AMT 8요소 자동 채점이 핵심 기능</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">한국어 특화 모델 없음</div>
+        <div class="meta-d">직접 파인튜닝이 필수</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S3 : PERSONALITY ============ -->
+<section id="s3" class="slide alt">
+  <div class="section-inner">
+    <header class="section-head reveal-head">
+      <div class="eyebrow">03 — LLM · 성격 평가</div>
+      <h1 class="title">실제 구조화 면담 데이터를 활용한<br/><span class="accent">LLM 기반 성격 평가.</span></h1>
+      <p class="subtitle">LLM-Based Personality Assessment from Structured Interviews</p>
+    </header>
+
+    <div class="section-body">
+      <div class="section-stage reveal-stage">
+      <div class="device-frame desktop-shape s3-device">
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">taoreunda.github.io · <span class="tl-tag">bdpi-presentation</span></div>
+          <a href="https://taoreunda.github.io/bdpi-presentation/" target="_blank" rel="noopener" class="open-ext" title="새 창에서 열기">↗</a>
+        </div>
+        <iframe
+          src="https://taoreunda.github.io/bdpi-presentation/"
+          title="BDPI Presentation"
+          referrerpolicy="no-referrer"
+          style="display:block;width:100%;height:100%;border:0;background:#fff"></iframe>
+      </div>
+    </div>
+
+    <div class="section-meta reveal-meta">
+      <div class="meta-item">
+        <div class="meta-h">N=425</div>
+        <div class="meta-d">20개 구조화 면담 질문</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">BDPI 점수 예측</div>
+        <div class="meta-d">일반 5요인 + 부적응 5요인</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">최고 정확도 85%</div>
+        <div class="meta-d">외향성 · GPT-5.1 · CoT</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S4 : BDPI REPORT ============ -->
+<section id="s4" class="slide">
+  <div class="section-inner">
+    <header class="section-head reveal-head">
+      <div class="eyebrow">04 — BDPI · 리더십 보고서 자동화</div>
+      <h1 class="title">BDPI-SF 응답 CSV로<br/>다중페이지 <span class="accent">PDF 보고서 자동 생성.</span></h1>
+      <p class="subtitle">Automated BDPI Leadership Report Generation</p>
+    </header>
+
+    <div class="section-body">
+      <div class="section-stage reveal-stage">
+      <div class="device-frame a4-shape">
+        <img src="bdpi_a4_sample.png" alt="BDPI 보고서 샘플" class="a4-image" />
+      </div>
+    </div>
+
+    <div class="section-meta reveal-meta">
+      <div class="meta-item">
+        <div class="meta-h">자동 T점수 변환</div>
+        <div class="meta-d">CSV 응답 → 표준화</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">9가지 리더 유형</div>
+        <div class="meta-d">리더 유형 제공</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">LLM 해석 자동 삽입</div>
+        <div class="meta-d">Jinja2 + Playwright PDF</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S5 : SCREENING ============ -->
+<section id="s5" class="slide alt">
+  <div class="section-inner">
+    <header class="section-head reveal-head">
+      <div class="eyebrow">05 — LLM · 사회적 고립 스크리닝</div>
+      <h1 class="title">인터뷰 에이전트로<br/><span class="accent">사회적 고립 자동 스크리닝.</span></h1>
+      <p class="subtitle">LLM Screening Agent · Social Isolation Interview</p>
+    </header>
+
+    <div class="section-body">
+      <div class="section-stage reveal-stage">
+      <div class="device-frame desktop-shape s5-device">
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">Dabom · <span class="tl-tag">localhost:8501/chat</span></div>
+        </div>
+        <div class="scr-frame">
+          <div class="scr-head">
+            <div class="logo">Dabom <span class="sub">SOCIAL ISOLATION ASSESSMENT</span></div>
+            <div class="badges"><span class="ub">사용자 (인터뷰)</span><span class="ub active">검사자 (검토)</span></div>
+          </div>
+          <div class="scr-body">
+            <div class="scr-chat" id="scr-chat">
+              <div class="scr-msg bot">안녕하세요. 사회적 고립 평가 인터뷰를 시작하겠습니다.</div>
+            </div>
+            <div class="scr-scorecard">
+              <div class="sc-progress">
+                <span class="label">진행률</span>
+                <div class="bar"><i id="sc-progress-bar" style="width:0%"></i></div>
+                <span class="pct" id="sc-progress-text">0 / 7</span>
+              </div>
+              <div class="sc-criteria">
+                <div class="sc-crit wait" id="crit-A"><span class="nm">A 물리적 고립</span><span class="st">대기</span></div>
+                <div class="sc-crit wait" id="crit-B"><span class="nm">B 객관적 고립</span><span class="st">대기</span></div>
+                <div class="sc-crit wait" id="crit-C"><span class="nm">C 주관적 고립</span><span class="st">대기</span></div>
+                <div class="sc-crit wait" id="crit-D"><span class="nm">D 정서 · 기능 손상</span><span class="st">대기</span></div>
+              </div>
+              <div class="sc-items" id="sc-items"></div>
+            </div>
+          </div>
+          <div class="scr-controls">
+            <button id="scr-reset" class="restart-link">↻ 다시 보기</button>
+            <button class="primary hidden" id="scr-play" aria-hidden="true">▶ Play</button>
+            <button id="scr-next" class="hidden" aria-hidden="true">다음 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-meta reveal-meta">
+      <div class="meta-item">
+        <div class="meta-h">21개 구조화 질문</div>
+        <div class="meta-d">A·B·C·D 4기준 평가</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">전문가 검토 UI</div>
+        <div class="meta-d">AI 판정 + 수동 보정</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">Rule + LLM 하이브리드</div>
+        <div class="meta-d">Gemini 2.5 Flash · LangGraph</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S6 : DEPRESSION ML ============ -->
+<section id="s6" class="slide alt">
+  <div class="section-inner">
+    <header class="section-head reveal-head">
+      <div class="eyebrow">06 — 머신러닝 · 우울 분류</div>
+      <h1 class="title">자전적 기억 면담 멀티모달 특징으로<br/><span class="accent">우울증 자동 분류.</span></h1>
+      <p class="subtitle">Multimodal ML on Autobiographical Memory Interviews</p>
+    </header>
+
+    <div class="section-body">
+      <div class="section-stage reveal-stage">
+      <div class="device-frame pipeline-shape">
+        <img src="ml_pipeline_diagram.png" alt="Depression Detection ML Pipeline" class="pipeline-image" />
+      </div>
+    </div>
+
+    <div class="section-meta reveal-meta">
+      <div class="meta-item">
+        <div class="meta-h">멀티모달 특징</div>
+        <div class="meta-d">AM · Text · Voice</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">5-fold 교차 검증</div>
+        <div class="meta-d">StratifiedGroupKFold</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-h">SHAP 기반 해석</div>
+        <div class="meta-d">상위 3개 특징으로 AUC 0.653</div>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">Lab Meeting · 2026.05.19 · Korea University</footer>
+
+<script>
+  if (location.search.includes('showall')) {
+    document.body.classList.add('show-all');
+    setTimeout(() => {
+      const s1b = document.getElementById('s1-body');
+      if (s1b) {
+        s1b.innerHTML = `
+<div class="bubble assistant done">안녕하세요! 저장된 기억에 대해 분석해 드릴 수 있어요.</div>
+<div class="bubble assistant done">어떤 기억이 궁금하신가요?</div>
+<div class="bubble user done">최근에 어떤 기억들이 있었는지 분석해줘</div>
+<div class="bubble assistant done">두 가지 패턴이 발견됩니다.</div>
+<div class="bubble assistant done">① 토요일 · 비 · 한강 · 산책 — 비 오는 토요일 한강 산책의 기억입니다.</div>
+<div class="bubble assistant done">② 커피 · 카페 · 수진 · 아메리카노 — 동료 수진님과 카페에서 보내신 시간이네요.</div>`;
+      }
+      const s2b = document.getElementById('s2-body');
+      if (s2b) {
+        s2b.innerHTML = `
+<div class="bubble assistant done">'커피'와 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>
+<div class="bubble user done">지난 토요일 아침, 학교 앞 카페에서 친구와 라떼를 마셨던 순간이 떠올라요.</div>
+<div class="bubble assistant done">7개 요소가 확인되었습니다. ("생각" 항목은 명시되지 않음)</div>`;
+      }
+      const gt = ['done','done','done','done','done','wait','done','done'];
+      document.querySelectorAll('#s2-scores .s').forEach((s, i) => {
+        s.classList.remove('wait');
+        if (gt[i] === 'done') s.classList.add('done');
+        else s.classList.add('wait');
+      });
+    }, 100);
+  }
+
+  // Apple-style reveals
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }), { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal-head, .reveal-stage, .reveal-meta').forEach(el => io.observe(el));
+
+  // Nav active link
+  const navLinks = document.querySelectorAll('.nav-links a');
+  document.querySelectorAll('section.slide').forEach(s => new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    });
+  }, { threshold: 0.4 }).observe(s));
+
+  // === Auto-fire demos on section enter (Apple landing pattern) ===
+  const autoFired = new Set();
+  function autoFire(id, fn) {
+    const sec = document.getElementById(id); if (!sec) return;
+    new IntersectionObserver(es => {
+      es.forEach(e => {
+        if (e.isIntersecting && !autoFired.has(id)) {
+          autoFired.add(id);
+          setTimeout(fn, 320);
+        }
+      });
+    }, { threshold: 0.45 }).observe(sec);
+  }
+  if (!location.search.includes('showall')) {
+    autoFire('s1', () => typeof s1PlayDemo === 'function' && s1PlayDemo());
+    autoFire('s2', () => typeof s2Play === 'function' && s2Play());
+    autoFire('s5', () => typeof scPlayDemo === 'function' && scPlayDemo());
+  }
+
+  // Parallax on stages (subtle Apple-like depth)
+  const stages = document.querySelectorAll('.section-stage');
+  let lastScroll = 0, ticking = false;
+  function parallax() {
+    stages.forEach(stage => {
+      const rect = stage.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > innerHeight) return;
+      const centerY = rect.top + rect.height / 2;
+      const offset = (centerY - innerHeight / 2) * 0.04;
+      stage.style.setProperty('--py', offset + 'px');
+      const inner = stage.firstElementChild;
+      if (inner) inner.style.transform = `translateY(${-offset}px)`;
+    });
+    ticking = false;
+  }
+  addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(parallax); ticking = true; }
+  }, { passive: true });
+
+  // ============ S1 Dabom Chat ============
+  const s1Body = document.getElementById('s1-body');
+  const s1Input = document.getElementById('s1-input');
+  const s1Send = document.getElementById('s1-send');
+  let s1Busy = false;
+
+  async function streamText(el, text, speed = 18) {
+    el.innerHTML = '<span class="streamed"></span><span class="cursor"></span>';
+    const target = el.querySelector('.streamed');
+    for (let i = 0; i <= text.length; i++) {
+      target.textContent = text.slice(0, i);
+      s1Body.scrollTop = s1Body.scrollHeight;
+      await new Promise(r => setTimeout(r, speed + Math.random() * 20));
+    }
+    el.classList.add('done');
+  }
+  async function s1AddBot(text) {
+    const d = document.createElement('div'); d.className = 'bubble assistant';
+    s1Body.appendChild(d);
+    await streamText(d, text);
+    s1Body.scrollTop = s1Body.scrollHeight;
+  }
+  function s1AddUser(text) {
+    const d = document.createElement('div'); d.className = 'bubble user done'; d.textContent = text;
+    s1Body.appendChild(d); s1Body.scrollTop = s1Body.scrollHeight;
+  }
+  function s1AddSystem(text) {
+    const d = document.createElement('div'); d.className = 'bubble system done'; d.textContent = text;
+    s1Body.appendChild(d); s1Body.scrollTop = s1Body.scrollHeight;
+  }
+  function s1TypingShow() {
+    const d = document.createElement('div'); d.className = 'bubble assistant done typing';
+    d.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+    s1Body.appendChild(d); s1Body.scrollTop = s1Body.scrollHeight;
+    return d;
+  }
+  async function s1Init() {
+    await s1AddBot('안녕하세요! 저장된 기억에 대해 분석해 드릴 수 있어요.');
+    await s1AddBot('어떤 기억이 궁금하신가요?');
+  }
+  async function s1Submit() {
+    if (s1Busy) return;
+    const t = s1Input.value.trim(); if (!t) return;
+    s1Busy = true; s1AddUser(t); s1Input.value = '';
+    const typing = s1TypingShow();
+    await new Promise(r => setTimeout(r, 600));
+    typing.remove();
+    await s1AddBot('네, 잘 들었어요. 그 기억에 대해 좀 더 말씀해주실 수 있을까요?');
+    s1Busy = false;
+  }
+  s1Send.addEventListener('click', s1Submit);
+  s1Input.addEventListener('keydown', e => { if (e.key === 'Enter') s1Submit(); });
+
+  const s1Play = document.getElementById('s1-play');
+  let s1Demo = false;
+  async function s1TypeInput(text, speed = 70) {
+    for (let i = 0; i <= text.length; i++) {
+      s1Input.value = text.slice(0, i);
+      await new Promise(r => setTimeout(r, speed));
+    }
+  }
+  async function s1HighlightGraph(names, baseDelay = 140) {
+    const nodeEls = document.querySelectorAll('#mem-svg .node');
+    for (const name of names) {
+      const node = Array.from(nodeEls).find(n => n.querySelector('text')?.textContent === name);
+      if (!node) continue;
+      const circle = node.querySelector('circle');
+      circle.style.transition = 'filter 0.3s var(--ease), fill-opacity 0.3s var(--ease)';
+      circle.style.filter = 'drop-shadow(0 0 10px currentColor) brightness(1.4)';
+      circle.setAttribute('fill-opacity', '0.95');
+      await new Promise(r => setTimeout(r, baseDelay));
+      setTimeout(() => { circle.style.filter = ''; circle.setAttribute('fill-opacity', '0.5'); }, 1400);
+    }
+  }
+  async function s1PlayDemo() {
+    if (s1Demo || s1Busy) return;
+    s1Demo = true; s1Busy = true;
+    s1Play.disabled = true; s1Play.textContent = '재생 중…';
+    s1Input.disabled = true; s1Send.disabled = true;
+    s1Body.innerHTML = '';
+    s1Input.value = '';
+    await s1AddBot('안녕하세요! 저장된 기억에 대해 분석해 드릴 수 있어요.');
+    await s1AddBot('어떤 기억이 궁금하신가요?');
+    await new Promise(r => setTimeout(r, 500));
+    const q = '최근에 어떤 기억들이 있었는지 분석해줘';
+    await s1TypeInput(q);
+    await new Promise(r => setTimeout(r, 200));
+    s1AddUser(q); s1Input.value = '';
+    const t1 = s1TypingShow();
+    await new Promise(r => setTimeout(r, 700));
+    t1.remove();
+    await s1HighlightGraph(['토요일', '비', '한강', '산책'], 140);
+    await new Promise(r => setTimeout(r, 300));
+    await s1HighlightGraph(['카페', '커피', '아메리카노', '수진'], 140);
+    await new Promise(r => setTimeout(r, 400));
+    await s1AddBot('두 가지 패턴이 발견됩니다.');
+    await s1AddBot('① 토요일 · 비 · 한강 · 산책 — 비 오는 토요일 한강 산책의 기억입니다.');
+    await s1AddBot('② 커피 · 카페 · 수진 · 아메리카노 — 동료 수진님과 카페에서 보내신 시간이네요.');
+    await s1AddBot('두 활동 모두 차분하고 휴식적인 톤입니다. 어느 쪽을 더 자세히 살펴볼까요?');
+    s1Demo = false; s1Busy = false;
+    s1Input.disabled = false; s1Send.disabled = false;
+    s1Play.disabled = false; s1Play.textContent = '↻ 다시 보기';
+  }
+  s1Play.addEventListener('click', s1PlayDemo);
+
+  // Memory graph (Apple system colors)
+  (function() {
+    const svg = d3.select('#mem-svg');
+    const W = 360, H = 260;
+    svg.attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+    const nodes = [
+      { id: '커피', g: 'cue', r: 13 }, { id: '한강', g: 'place', r: 11 },
+      { id: '수진', g: 'people', r: 10 }, { id: '비', g: 'cue', r: 10 },
+      { id: '토요일', g: 'time', r: 10 }, { id: '산책', g: 'event', r: 12 },
+      { id: '아메리카노', g: 'event', r: 10 }, { id: '카페', g: 'place', r: 10 },
+    ];
+    const links = [
+      { source: '커피', target: '카페' },{ source: '커피', target: '아메리카노' },{ source: '커피', target: '수진' },
+      { source: '카페', target: '수진' },{ source: '한강', target: '산책' },{ source: '비', target: '한강' },
+      { source: '토요일', target: '산책' },{ source: '토요일', target: '한강' },{ source: '산책', target: '수진' },
+    ];
+    const colors = { cue: '#ff9500', place: '#00c7be', people: '#af52de', time: '#007aff', event: '#34c759' };
+    const linkG = svg.append('g').selectAll('.link').data(links).enter().append('line').attr('class', 'link');
+    const nodeG = svg.append('g').selectAll('.node').data(nodes).enter().append('g').attr('class', 'node');
+    nodeG.append('circle').attr('r', d => d.r).attr('fill', d => colors[d.g]).attr('fill-opacity', 0.5).attr('stroke', d => colors[d.g]).attr('stroke-width', 1.5);
+    nodeG.append('text').attr('dy', d => -(d.r + 5)).attr('text-anchor', 'middle').text(d => d.id);
+    d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(60))
+      .force('charge', d3.forceManyBody().strength(-180))
+      .force('center', d3.forceCenter(W/2, H/2))
+      .force('collide', d3.forceCollide().radius(32))
+      .on('tick', () => {
+        linkG.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+    nodeG.on('mouseenter', function(_, d) { d3.select(this).select('circle').transition().duration(250).attr('r', d.r * 1.5).attr('fill-opacity', 0.85); })
+         .on('mouseleave', function(_, d) { d3.select(this).select('circle').transition().duration(250).attr('r', d.r).attr('fill-opacity', 0.5); });
+  })();
+
+  // ============ S2 AMT ============
+  const s2Run = document.getElementById('s2-run');
+  const s2Body = document.getElementById('s2-body');
+  const s2Scores = document.querySelectorAll('#s2-scores .s');
+  const s2GT = ['done','done','done','done','done','wait','done','done'];
+  function s2Reset() {
+    s2Body.innerHTML = `<div class="bubble assistant done">'커피'와 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>`;
+    s2Scores.forEach(s => { s.classList.remove('done','scoring'); s.classList.add('wait'); });
+    s2Run.disabled = false; s2Run.textContent = '↻ 다시 보기';
+  }
+  async function s2Play() {
+    s2Reset();
+    s2Run.disabled = true; s2Run.textContent = '재생 중…';
+    await new Promise(r => setTimeout(r, 350));
+    const userMsg = document.createElement('div'); userMsg.className = 'bubble user';
+    s2Body.appendChild(userMsg);
+    const txt = '지난 토요일 아침, 학교 앞 카페에서 친구와 라떼를 마셨던 순간이 떠올라요.';
+    for (let i = 0; i <= txt.length; i++) {
+      userMsg.textContent = txt.slice(0, i); s2Body.scrollTop = s2Body.scrollHeight;
+      await new Promise(r => setTimeout(r, 14));
+    }
+    userMsg.classList.add('done');
+    await new Promise(r => setTimeout(r, 400));
+    const thinking = document.createElement('div');
+    thinking.className = 'bubble assistant done typing';
+    thinking.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+    s2Body.appendChild(thinking); s2Body.scrollTop = s2Body.scrollHeight;
+    await new Promise(r => setTimeout(r, 1400));
+    thinking.remove();
+    const result = document.createElement('div'); result.className = 'bubble assistant done';
+    s2Body.appendChild(result);
+    const out = '7개 요소가 확인되었습니다. ("생각" 항목은 명시되지 않음)';
+    for (let i = 0; i <= out.length; i++) {
+      result.textContent = out.slice(0, i); s2Body.scrollTop = s2Body.scrollHeight;
+      await new Promise(r => setTimeout(r, 18));
+    }
+    for (let i = 0; i < s2Scores.length; i++) {
+      const s = s2Scores[i];
+      s.classList.remove('wait'); s.classList.add('scoring');
+      await new Promise(r => setTimeout(r, 260));
+      s.classList.remove('scoring');
+      if (s2GT[i] === 'done') s.classList.add('done');
+      await new Promise(r => setTimeout(r, 80));
+    }
+    s2Run.textContent = '↻ 다시 보기'; s2Run.disabled = false;
+  }
+  s2Run.addEventListener('click', s2Play);
+
+  // ============ S5 Screening ============
+  const flow = [
+    { code:'A1', crit:'A', q:'지난 1달 동안, 하루 중 대부분, 거의 매일 집 혹은 방에서 시간을 보내셨나요?', a:'네, 거의 안 나갔어요', verdict:'met' },
+    { code:'A2', crit:'A', q:'지난 1달 동안, 일주일에 평균적으로 몇 번 외출하셨나요?', a:'주 1번 정도', verdict:'met' },
+    { code:'A3', crit:'A', q:'이러한 기간이 얼마나 오래 지속되었습니까?', a:'한 1년 된 것 같아요', verdict:'met', critDone:'met' },
+    { code:'B1', crit:'B', q:'지난 1달 동안, 유의미한 상호작용을 꾸준히 지속한 사람이 몇 명입니까?', a:'없어요, 아무도', verdict:'met' },
+    { code:'B2', crit:'B', q:'이런 상태가 얼마나 오래 지속되었나요?', a:'한 6개월 정도요', verdict:'met', critDone:'met' },
+    { code:'C1', crit:'C', q:'필요할 때 의지할 수 있는 분이 몇 분이나 계신가요?', a:'한 분 정도', verdict:'unmet', critDone:'unmet' },
+    { code:'D1', crit:'D', q:'고립된 생활로 인해 정서적 고통을 느끼셨나요?', a:'네, 많이요', verdict:'met', critDone:'met' },
+  ];
+  let scIdx = 0, scPlaying = false;
+  const scChat = document.getElementById('scr-chat');
+  const scItems = document.getElementById('sc-items');
+  const scNext = document.getElementById('scr-next');
+  const scPlay = document.getElementById('scr-play');
+  const scReset = document.getElementById('scr-reset');
+  function scAddBot(t) { const d = document.createElement('div'); d.className = 'scr-msg bot'; d.textContent = t; scChat.appendChild(d); scChat.scrollTop = scChat.scrollHeight; }
+  function scAddUser(t) { const d = document.createElement('div'); d.className = 'scr-msg user'; d.textContent = t; scChat.appendChild(d); scChat.scrollTop = scChat.scrollHeight; }
+  function scTyping() { const d = document.createElement('div'); d.className = 'scr-typing'; d.innerHTML = '<span></span><span></span><span></span>'; scChat.appendChild(d); scChat.scrollTop = scChat.scrollHeight; return d; }
+  function scAddItem(st) {
+    const d = document.createElement('div'); d.className = 'sc-item';
+    d.innerHTML = `<span class="code">${st.code}</span><span class="q">${st.q}</span><div class="ans">→ "${st.a}"</div><span class="verdict ${st.verdict}">${st.verdict === 'met' ? '✓ 충족' : '✗ 미충족'}</span>`;
+    scItems.appendChild(d); scItems.scrollTop = scItems.scrollHeight;
+  }
+  function scUpdateCrit(letter, state) {
+    const el = document.getElementById('crit-' + letter);
+    el.classList.remove('wait','met','unmet'); el.classList.add(state);
+    el.querySelector('.st').textContent = state === 'met' ? '충족' : state === 'unmet' ? '미충족' : '대기';
+  }
+  function scUpdateProgress() {
+    const pct = (scIdx / flow.length) * 100;
+    document.getElementById('sc-progress-bar').style.width = pct + '%';
+    document.getElementById('sc-progress-text').textContent = `${scIdx} / ${flow.length}`;
+  }
+  function scResetAll() {
+    scIdx = 0; scChat.innerHTML = ''; scItems.innerHTML = '';
+    scAddBot('안녕하세요. 사회적 고립 평가 인터뷰를 시작하겠습니다.');
+    ['A','B','C','D'].forEach(l => scUpdateCrit(l, 'wait'));
+    scUpdateProgress();
+    scNext.disabled = false; scPlaying = false; scPlay.classList.remove('playing'); scPlay.textContent = '▶ Play';
+  }
+  async function scAdvance() {
+    if (scIdx >= flow.length) return false;
+    const step = flow[scIdx];
+    const typing = scTyping();
+    await new Promise(r => setTimeout(r, 700));
+    typing.remove();
+    scAddBot(step.q);
+    await new Promise(r => setTimeout(r, 800));
+    scAddUser(step.a);
+    await new Promise(r => setTimeout(r, 400));
+    scAddItem(step);
+    if (step.critDone) scUpdateCrit(step.crit, step.critDone);
+    scIdx++; scUpdateProgress();
+    if (scIdx >= flow.length) {
+      await new Promise(r => setTimeout(r, 500));
+      scAddBot('평가가 모두 완료되었습니다. 진단: 사회적 고립 가능성 높음.');
+      return false;
+    }
+    return true;
+  }
+  scNext.addEventListener('click', async () => {
+    if (scPlaying || scIdx >= flow.length) return;
+    scNext.disabled = true; await scAdvance(); scNext.disabled = scIdx >= flow.length;
+  });
+  async function scPlayDemo() {
+    if (scPlaying) return;
+    scResetAll();
+    await new Promise(r => setTimeout(r, 400));
+    scPlaying = true;
+    while (scPlaying && scIdx < flow.length) {
+      const ok = await scAdvance(); if (!ok) break;
+      await new Promise(r => setTimeout(r, 700));
+    }
+    scPlaying = false;
+  }
+  scPlay.addEventListener('click', scPlayDemo);
+  scReset.addEventListener('click', scPlayDemo);
+
+</script>
+
+</body>
+</html>

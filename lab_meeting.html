@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lab Meeting · 2026.05.18</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<style>
+  :root {
+    --bg: #060812;
+    --bg-2: #0a0e1c;
+    --panel: #131a2e;
+    --panel-2: #1a2240;
+    --line: #1f2a4a;
+    --blue: #0066ff;
+    --cyan: #00ffff;
+    --magenta: #ff00d4;
+    --white: #ffffff;
+    --mid: #8095b4;
+    --mid-2: #5a6a8a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --body: 'Pretendard Variable', Pretendard, 'Space Grotesk', -apple-system, sans-serif;
+    --display: 'Space Grotesk', 'Pretendard Variable', sans-serif;
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @property --gradAngle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+  @property --glow { syntax: '<number>'; initial-value: 0; inherits: false; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--white);
+    font-family: var(--body); font-size: 16px; line-height: 1.5;
+    overflow-x: hidden; -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  /* === Ambient layers === */
+  #particles-bg, #grid-bg, .aurora {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  }
+  #grid-bg {
+    background-image:
+      linear-gradient(rgba(0, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridShift 40s linear infinite;
+    mask-image: radial-gradient(ellipse at center, black 25%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 25%, transparent 80%);
+  }
+  @keyframes gridShift { to { background-position: 60px 60px; } }
+  .aurora {
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 30%, rgba(0,102,255,0.15), transparent 50%),
+      radial-gradient(ellipse 60% 40% at 80% 70%, rgba(255,0,212,0.08), transparent 50%),
+      radial-gradient(ellipse 50% 30% at 50% 50%, rgba(0,255,255,0.1), transparent 60%);
+    animation: aurora 24s ease-in-out infinite alternate;
+  }
+  @keyframes aurora {
+    0%, 100% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+    50% { transform: translate(-30px, 20px) scale(1.1); filter: hue-rotate(20deg); }
+  }
+  .spotlight {
+    position: fixed; pointer-events: none; width: 700px; height: 700px;
+    border-radius: 50%; z-index: 1;
+    background: radial-gradient(circle, rgba(0, 102, 255, 0.18) 0%, transparent 60%);
+    transform: translate(-50%, -50%);
+    transition: left 0.15s ease-out, top 0.15s ease-out;
+    mix-blend-mode: screen;
+  }
+
+  /* === Nav === */
+  nav.topnav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 32px; display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(to bottom, rgba(6, 8, 18, 0.96), rgba(6, 8, 18, 0.5) 80%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
+  .brand { font-family: var(--mono); font-size: 13px; letter-spacing: 2px; color: var(--cyan); text-transform: uppercase; }
+  .brand .dot { display: inline-block; width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 12px var(--cyan); margin-right: 8px; animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity: 0.4; transform: scale(0.85);} }
+  .nav-links { display: flex; gap: 22px; }
+  .nav-links a { font-family: var(--mono); font-size: 11.5px; color: var(--mid); text-decoration: none; letter-spacing: 1.2px; transition: color 0.2s; position: relative; }
+  .nav-links a:hover, .nav-links a.active { color: var(--cyan); }
+  .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--cyan); transition: width 0.3s; }
+  .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+
+  /* === Hero === */
+  .hero { min-height: 100vh; padding-top: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 2; }
+  .hero-pre { font-family: var(--mono); color: var(--cyan); font-size: 12px; letter-spacing: 4px; margin-bottom: 24px; }
+  .hero-pre::before { content: '▶ '; animation: blink 1.4s infinite; }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(40px, 7vw, 96px);
+    font-weight: 700;
+    line-height: 1.02;
+    margin: 0 0 24px;
+    background: linear-gradient(var(--gradAngle), #ffffff 0%, var(--cyan) 40%, var(--magenta) 70%, var(--blue) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: gradRotate 8s linear infinite;
+    letter-spacing: -0.02em;
+  }
+  @keyframes gradRotate { to { --gradAngle: 360deg; } }
+  .hero-sub { color: var(--mid); font-size: 18px; max-width: 720px; margin: 0 auto; }
+  .hero-meta { margin-top: 48px; font-family: var(--mono); font-size: 12px; color: var(--mid-2); letter-spacing: 2px; }
+  .scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; color: var(--mid-2); letter-spacing: 2px; }
+  .scroll-hint::after { content: '↓'; display: block; margin-top: 8px; font-size: 16px; color: var(--cyan); animation: bounce 2s infinite; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(8px); opacity: 0.4; } }
+
+  /* === Section base === */
+  section.slide { position: relative; min-height: 100vh; padding: 110px 64px 80px; display: flex; align-items: center; z-index: 2; scroll-margin-top: 64px; }
+  .container { max-width: 1500px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.1fr); gap: 56px; align-items: center; }
+  .left, .right { position: relative; z-index: 3; }
+
+  .chip { font-family: var(--mono); font-size: 12px; letter-spacing: 2px; color: var(--cyan); margin-bottom: 24px; display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px; border: 1px solid rgba(0, 255, 255, 0.3); background: rgba(0, 255, 255, 0.04); border-radius: 4px;
+    position: relative; overflow: hidden;
+  }
+  .chip::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(0,255,255,0.15), transparent);
+    transform: translateX(-100%);
+    animation: shimmer 3.5s infinite;
+  }
+  @keyframes shimmer { 50%, 100% { transform: translateX(200%); } }
+  .chip .num { font-weight: 700; }
+  .chip .sep { color: var(--mid-2); }
+  .chip .tag { color: var(--white); letter-spacing: 1.5px; }
+  h1.title { font-family: var(--display); font-size: clamp(28px, 3.4vw, 44px); font-weight: 700; line-height: 1.15; margin: 0 0 20px; color: var(--white); letter-spacing: -0.01em; }
+  h1.title .gradient {
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle { font-family: var(--mono); font-size: 13px; color: var(--cyan); margin: 0 0 32px; letter-spacing: 1px; opacity: 0.85; }
+  ul.bullets { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  ul.bullets li { position: relative; padding-left: 26px; font-size: 15px; color: rgba(255, 255, 255, 0.88); line-height: 1.55; transition: transform 0.3s var(--spring); }
+  ul.bullets li:hover { transform: translateX(4px); }
+  ul.bullets li::before { content: '▸'; position: absolute; left: 0; color: var(--cyan); font-family: var(--mono); font-weight: 700; }
+  ul.bullets li.dev { color: rgba(255, 255, 255, 0.5); font-style: italic; }
+  ul.bullets li.dev::before { content: '◇'; color: var(--mid-2); }
+  ul.bullets li .mono, ul.bullets li code { font-family: var(--mono); font-size: 13px; color: var(--cyan); background: rgba(0, 255, 255, 0.07); padding: 1px 6px; border-radius: 3px; }
+  .hint { color: var(--mid); font-size: 12px; margin-top: 24px; font-family: var(--mono); }
+  .hint .key { background: rgba(0,255,255,0.1); border: 1px solid rgba(0,255,255,0.2); padding: 1px 6px; border-radius: 3px; color: var(--cyan); }
+
+  /* === Device frame === */
+  .device-frame {
+    position: relative; border-radius: 8px; overflow: hidden;
+    background: var(--panel); border: 1px solid var(--line);
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 255, calc(0.08 + var(--glow) * 0.15)),
+      0 30px 80px -20px rgba(0, 102, 255, calc(0.35 + var(--glow) * 0.2)),
+      0 0 60px -10px rgba(0, 255, 255, calc(0.2 + var(--glow) * 0.2));
+    transition: transform 0.5s var(--spring), --glow 0.5s ease;
+  }
+  .device-frame:hover { transform: translateY(-3px); --glow: 1; }
+  .device-titlebar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; color: var(--mid); letter-spacing: 1px;
+  }
+  .tl-dots { display: flex; gap: 6px; }
+  .tl-dot { width: 11px; height: 11px; border-radius: 50%; background: #3a3a3a; transition: filter 0.2s; }
+  .tl-dot.r { background: #ff5f57; }
+  .tl-dot.y { background: #febc2e; }
+  .tl-dot.g { background: #28c840; }
+  .device-frame:hover .tl-dot { filter: brightness(1.2) saturate(1.2); }
+  .tl-title { flex: 1; text-align: center; color: var(--mid); }
+  .tl-tag { color: var(--cyan); }
+  .corner { position: absolute; width: 14px; height: 14px; border-color: var(--cyan); border-style: solid; border-width: 0; z-index: 4; pointer-events: none; }
+  .corner.tl { top: 4px; left: 4px; border-top-width: 2px; border-left-width: 2px; }
+  .corner.tr { top: 4px; right: 4px; border-top-width: 2px; border-right-width: 2px; }
+  .corner.bl { bottom: 4px; left: 4px; border-bottom-width: 2px; border-left-width: 2px; }
+  .corner.br { bottom: 4px; right: 4px; border-bottom-width: 2px; border-right-width: 2px; }
+
+  /* === DABOM TUI === */
+  .tui {
+    --tui-bg: #171917; --tui-fg: #e6e0d5; --tui-mid: #c9c3b8;
+    --tui-user: #92b7d7; --tui-bot: #93c8b0; --tui-cue: #d8be7f;
+    --tui-think: #a99fc1; --tui-emotion: #d98b82; --tui-sense: #d8b56d;
+    --tui-space: #7fc8bc; --tui-people: #d6a37c;
+    background: var(--tui-bg); color: var(--tui-fg);
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.5;
+  }
+  .tui-ticker { padding: 6px 14px; border-bottom: 1px solid rgba(230,224,213,0.08); color: var(--tui-mid); font-size: 11px; overflow: hidden; white-space: nowrap; }
+  .tui-ticker .scroll { display: inline-block; animation: ticker 28s linear infinite; }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .tui-banner {
+    padding: 14px 20px; border: 1px solid rgba(230,224,213,0.1);
+    margin: 14px 14px 12px; border-radius: 2px;
+    display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center;
+  }
+  .ascii-dabom { color: var(--tui-fg); font-family: var(--mono); font-size: 9px; line-height: 1; white-space: pre; letter-spacing: -0.3px; text-shadow: 0 0 8px rgba(216,190,127,0.3); }
+  .tui-info { font-size: 11.5px; line-height: 1.55; }
+  .tui-info .lbl { color: var(--tui-mid); display: inline-block; width: 50px; }
+  .tui-info .val.cue { color: var(--tui-cue); }
+  .tui-body { padding: 4px 20px 14px; min-height: 220px; max-height: 260px; overflow-y: auto; }
+  .tui-body::-webkit-scrollbar { width: 6px; }
+  .tui-body::-webkit-scrollbar-thumb { background: rgba(230,224,213,0.15); border-radius: 3px; }
+  .tui-msg { margin-bottom: 8px; min-height: 1.5em; }
+  .tui-msg.bot { color: var(--tui-fg); }
+  .tui-msg.bot::before { content: '▌'; color: var(--tui-bot); margin-right: 6px; }
+  .tui-msg.user { color: var(--tui-user); }
+  .tui-msg.user::before { content: '> '; color: var(--tui-cue); }
+  .tui-msg.system { color: var(--tui-mid); font-style: italic; font-size: 11.5px; }
+  .tui-msg.system::before { content: '  ⚙ '; color: var(--tui-cue); }
+  .tui-msg .cursor { display: inline-block; width: 6px; background: var(--tui-cue); animation: cursor 1s infinite step-end; vertical-align: -1px; }
+  .tui-msg.done .cursor { display: none; }
+  @keyframes cursor { 50% { opacity: 0; } }
+  .tui-input { padding: 8px 16px; border-top: 1px solid rgba(230,224,213,0.1); display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.02); }
+  .tui-input .prompt { color: var(--tui-cue); }
+  .tui-input input { flex: 1; background: transparent; border: 0; color: var(--tui-fg); font-family: var(--mono); font-size: 12.5px; outline: none; caret-color: var(--tui-cue); }
+  .tui-input .send { color: var(--tui-mid); font-size: 10px; padding: 2px 8px; border: 1px solid rgba(230,224,213,0.2); border-radius: 3px; cursor: pointer; font-family: var(--mono); background: transparent; transition: all 0.15s; }
+  .tui-input .send:hover { color: var(--tui-cue); border-color: var(--tui-cue); background: rgba(216,190,127,0.08); }
+  .tui-status { padding: 6px 16px; border-top: 1px solid rgba(230,224,213,0.1); background: rgba(0,0,0,0.25); display: flex; justify-content: space-between; color: var(--tui-mid); font-size: 10.5px; }
+  .tui-status .mode { color: var(--tui-user); transition: color 0.4s; }
+  .tui-status .mode.training { color: var(--tui-cue); }
+  .typing-dots { display: inline-flex; gap: 3px; vertical-align: middle; margin-left: 6px; }
+  .typing-dots span { width: 4px; height: 4px; background: var(--tui-cue); border-radius: 50%; animation: dots 1.2s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dots { 0%, 60%, 100% { opacity: 0.2; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } }
+
+  /* === Memory graph (D3) === */
+  .mem-graph { position: relative; height: 130px; background: rgba(0,0,0,0.4); margin: 0 14px 12px; border: 1px solid rgba(230,224,213,0.08); border-radius: 3px; overflow: hidden; }
+  .mem-graph .label { position: absolute; top: 6px; left: 10px; font-size: 9px; color: var(--tui-mid); letter-spacing: 1px; pointer-events: none; }
+  .mem-graph svg { width: 100%; height: 100%; }
+  .mem-graph .node circle { transition: r 0.3s ease, fill 0.3s ease; }
+  .mem-graph .node text { font-family: var(--mono); font-size: 9px; fill: var(--tui-fg); pointer-events: none; }
+  .mem-graph .link { stroke: rgba(216,190,127,0.25); stroke-width: 1; }
+
+  /* === Score bar with elastic spring === */
+  .score-bar { padding: 12px 20px; border-top: 1px solid rgba(230,224,213,0.08); display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; background: rgba(0,0,0,0.15); }
+  .score-bar .s { display: inline-flex; align-items: center; gap: 5px; transition: opacity 0.3s, transform 0.5s var(--spring); transform: scale(1); }
+  .score-bar .s.wait { opacity: 0.4; }
+  .score-bar .s.scoring { opacity: 1; animation: scorePulse 0.6s ease; }
+  .score-bar .s.done, .score-bar .s.fail { transform: scale(1); }
+  @keyframes scorePulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.25); filter: brightness(1.5); }
+    100% { transform: scale(1); }
+  }
+  .score-bar .s::before { content: '○'; margin-right: 2px; font-size: 12px; transition: content 0.3s; }
+  .score-bar .s.done::before { content: '●'; }
+  .score-bar .s[data-c="subj"] { color: var(--tui-mid); }
+  .score-bar .s[data-c="time"] { color: var(--tui-user); }
+  .score-bar .s[data-c="place"] { color: var(--tui-space); }
+  .score-bar .s[data-c="event"] { color: var(--tui-bot); }
+  .score-bar .s[data-c="emo"] { color: var(--tui-emotion); }
+  .score-bar .s[data-c="think"] { color: var(--tui-think); }
+  .score-bar .s[data-c="ppl"] { color: var(--tui-people); }
+  .score-bar .s[data-c="sense"] { color: var(--tui-sense); }
+
+  .tui-run { margin: 10px 14px; padding: 8px 14px; background: rgba(216, 190, 127, 0.12); border: 1px solid var(--tui-cue); color: var(--tui-cue); font-family: var(--mono); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .tui-run:hover { background: rgba(216, 190, 127, 0.22); }
+  .tui-run::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(216,190,127,0.3), transparent); transform: translateX(-100%); }
+  .tui-run:hover::after { animation: shimmer 1.2s; }
+  .tui-run:disabled { opacity: 0.5; cursor: default; }
+  .think-prog { padding: 6px 20px 0; color: var(--tui-think); font-size: 11px; opacity: 0; transition: opacity 0.3s; }
+  .think-prog.show { opacity: 1; }
+  .think-prog .pb { display: inline-block; width: 100px; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; vertical-align: middle; margin: 0 8px; overflow: hidden; }
+  .think-prog .pb i { display: block; height: 100%; background: var(--tui-think); width: 0; transition: width 0.3s ease; }
+
+  /* === BDPI Personality (Section 3) === */
+  .bdpi-frame {
+    --bdpi-bg: #0e1024; --bdpi-panel: #161a35;
+    --bdpi-accent: #6366f1; --bdpi-mal: #f59e0b;
+    --bdpi-text: #e8ebff; --bdpi-mid: #8b91b8;
+    background: var(--bdpi-bg); color: var(--bdpi-text); font-family: var(--body);
+  }
+  .bdpi-nav { display: flex; gap: 20px; padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
+  .bdpi-nav .logo { color: var(--bdpi-text); font-weight: 700; }
+  .bdpi-nav a { color: var(--bdpi-mid); cursor: pointer; transition: color 0.2s; }
+  .bdpi-nav a.active, .bdpi-nav a:hover { color: var(--bdpi-accent); }
+  .bdpi-body { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; padding: 16px; }
+  .bdpi-tabs { display: flex; gap: 8px; margin-bottom: 12px; position: relative; }
+  .bdpi-tab { flex: 1; padding: 8px; cursor: pointer; text-align: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; font-size: 11.5px; font-weight: 600; transition: all 0.25s; position: relative; z-index: 1; }
+  .bdpi-tab .ttag { display: block; font-size: 9.5px; opacity: 0.7; margin-top: 2px; font-family: var(--mono); letter-spacing: 1px; }
+  .bdpi-tab.active { background: rgba(99, 102, 241, 0.15); border-color: var(--bdpi-accent); color: var(--bdpi-accent); }
+  .bdpi-tab.mal.active { background: rgba(245, 158, 11, 0.15); border-color: var(--bdpi-mal); color: var(--bdpi-mal); }
+  .dim-list { max-height: 300px; overflow-y: auto; padding-right: 4px; transition: opacity 0.3s; }
+  .dim-list.fading { opacity: 0; }
+  .dim-list::-webkit-scrollbar { width: 6px; }
+  .dim-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  .dim { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-left: 3px solid var(--bdpi-accent); border-radius: 4px; padding: 10px 14px; margin-bottom: 8px; transition: all 0.25s; cursor: pointer; }
+  .dim:hover, .dim.active { background: rgba(99,102,241,0.08); transform: translateX(3px); box-shadow: -2px 0 12px rgba(99,102,241,0.2); }
+  .dim.mal { border-left-color: var(--bdpi-mal); }
+  .dim.mal:hover, .dim.mal.active { background: rgba(245,158,11,0.08); box-shadow: -2px 0 12px rgba(245,158,11,0.2); }
+  .dim-h { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .dim-code { background: var(--bdpi-accent); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 700; }
+  .dim.mal .dim-code { background: var(--bdpi-mal); }
+  .dim-name { font-weight: 700; font-size: 13.5px; }
+  .dim-en { color: var(--bdpi-mid); font-size: 11px; font-style: italic; }
+  .dim-q { color: var(--bdpi-mid); font-size: 11.5px; padding-left: 4px; border-left: 1px dashed rgba(255,255,255,0.12); }
+
+  /* Radar chart */
+  .radar-wrap { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 12px; }
+  .radar-wrap .rh { font-size: 11px; color: var(--bdpi-mid); margin-bottom: 6px; font-family: var(--mono); letter-spacing: 1px; }
+  .radar-svg { width: 100%; aspect-ratio: 1; max-height: 260px; }
+  .radar-svg .grid-line { stroke: rgba(255,255,255,0.08); stroke-width: 0.5; fill: none; }
+  .radar-svg .axis { stroke: rgba(255,255,255,0.06); stroke-width: 0.5; }
+  .radar-svg .axis-label { font-size: 9px; fill: var(--bdpi-mid); font-family: var(--mono); }
+  .radar-svg .data-poly { transition: fill 0.5s, stroke 0.5s; }
+  .radar-svg .data-poly.gen { fill: rgba(99,102,241,0.25); stroke: var(--bdpi-accent); stroke-width: 1.5; }
+  .radar-svg .data-poly.mal { fill: rgba(245,158,11,0.25); stroke: var(--bdpi-mal); stroke-width: 1.5; }
+  .radar-svg .data-point { transition: cx 0.6s var(--spring), cy 0.6s var(--spring), fill 0.5s; }
+  .factor-tag { font-size: 10px; color: var(--bdpi-mid); margin-top: 6px; font-family: var(--mono); text-align: center; }
+
+  /* === BDPI Report 9-grid (Section 4) === */
+  .report-frame {
+    --r-primary: #1A365D; --r-primary-l: #2D4B7C; --r-coral: #E27D60;
+    --r-bg: #ffffff; --r-accent: #f8f9fa; --r-border: #e0e0e0;
+    --r-text: #1A365D; --r-mid: #555;
+    background: var(--r-bg); color: var(--r-text);
+    font-family: 'Noto Sans KR', var(--body);
+  }
+  .report-head { background: var(--r-primary); height: 5px; }
+  .report-body { padding: 22px 26px; }
+  .report-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--r-mid); letter-spacing: 1px; margin-bottom: 16px; }
+  .report-meta .right { color: var(--r-coral); font-weight: 700; }
+  .report-h { font-size: 17px; font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--r-border); margin: 0 0 16px; color: var(--r-primary); }
+  .report-h .en { color: var(--r-coral); font-size: 12px; font-weight: 700; margin-left: 8px; }
+  .grid9 { display: grid; grid-template-columns: 60px repeat(3, 1fr); grid-template-rows: 24px repeat(3, 1fr); gap: 6px; margin-bottom: 16px; position: relative; }
+  .grid9 .axis-y { writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--r-mid); font-weight: 700; grid-column: 1; grid-row: 2 / 5; }
+  .grid9 .col-h { display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--r-mid); font-weight: 700; }
+  .grid9 .cell { border: 1px solid var(--r-border); border-radius: 4px; padding: 12px 8px; text-align: center; font-size: 12px; background: #fff; position: relative; }
+  .grid9 .cell.selected { background: linear-gradient(135deg, var(--r-coral), #e89878); color: #fff; border-color: var(--r-coral); box-shadow: 0 4px 14px rgba(226, 125, 96, 0.25); }
+  .grid9 .cell .name { display: block; font-weight: 700; font-size: 12px; }
+  .grid9 .cell .axis-info { display: block; font-size: 9px; opacity: 0.7; margin-top: 2px; }
+  .grid9 .grid-corner { background: transparent; border: 0; }
+  /* LLM interpretation panel */
+  .llm-interp { background: var(--r-accent); border: 1px solid var(--r-border); border-left: 4px solid var(--r-coral); border-radius: 6px; padding: 14px 18px; margin: 0 0 14px; }
+  .llm-meta { font-family: var(--mono); font-size: 10px; color: var(--r-coral); letter-spacing: 1px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .llm-stream { color: var(--r-text); font-size: 12.5px; line-height: 1.7; min-height: 96px; }
+  .llm-stream .cursor { display: inline-block; width: 7px; background: var(--r-coral); height: 0.9em; vertical-align: -2px; animation: blink 1s infinite step-end; margin-left: 2px; }
+  .llm-stream.done .cursor { display: none; }
+  .llm-replay { background: transparent; border: 1px solid var(--r-coral); color: var(--r-coral); padding: 3px 9px; font-size: 10px; cursor: pointer; border-radius: 3px; font-family: var(--mono); letter-spacing: 1px; transition: all 0.2s; }
+  .llm-replay:hover { background: rgba(226,125,96,0.1); }
+  .report-axis-bottom { text-align: center; font-size: 10px; color: var(--r-mid); font-weight: 700; margin-bottom: 16px; letter-spacing: 1px; }
+  .factor-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+  .fb-block { background: var(--r-accent); border-radius: 6px; padding: 10px 12px; }
+  .fb-h { font-size: 10px; font-weight: 700; color: var(--r-primary); margin-bottom: 8px; letter-spacing: 0.5px; }
+  .fb-block.mal .fb-h { color: var(--r-coral); }
+  .fb-row { display: grid; grid-template-columns: 60px 1fr 26px; gap: 8px; align-items: center; font-size: 10px; margin-bottom: 4px; }
+  .fb-row .lbl { color: var(--r-text); }
+  .fb-row .bar { background: #fff; border: 1px solid var(--r-border); height: 8px; border-radius: 4px; overflow: hidden; position: relative; }
+  .fb-row .bar > i { display: block; height: 100%; background: var(--r-primary); transition: width 1.2s var(--spring); width: 0; }
+  .fb-block.mal .fb-row .bar > i { background: var(--r-coral); }
+  .fb-row .val { color: var(--r-text); font-family: var(--mono); text-align: right; font-weight: 700; }
+  .report-foot { background: var(--r-primary); height: 4px; margin-top: 8px; }
+  .report-brand { padding: 6px 26px; font-size: 9px; color: var(--r-mid); display: flex; justify-content: space-between; }
+  .report-brand .logo { color: var(--r-primary); font-weight: 700; font-size: 13px; letter-spacing: 1px; }
+  .report-brand .logo span { color: var(--r-coral); }
+
+  /* === Screening (Section 5) === */
+  .scr-frame {
+    --s-primary: #2E86AB; --s-bg: #f8fafc; --s-card: #ffffff;
+    --s-border: #e5e9f0; --s-text: #1f2937; --s-mid: #6b7280;
+    --s-bot: #f0f4f8; --s-user: #d4e8f4;
+    --s-success: #4caf50; --s-success-bg: #e8f5e8;
+    --s-fail: #ff9800; --s-fail-bg: #fff3e0;
+    background: var(--s-bg); color: var(--s-text); font-family: var(--body);
+  }
+  .scr-head { padding: 10px 16px; background: var(--s-card); border-bottom: 1px solid var(--s-border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .scr-head .logo { font-weight: 700; color: var(--s-primary); font-size: 14px; }
+  .scr-head .logo .sub { font-size: 9px; letter-spacing: 1.5px; color: var(--s-mid); font-weight: 400; margin-left: 4px; }
+  .scr-head .badges { display: flex; gap: 6px; }
+  .scr-head .ub { padding: 3px 8px; border: 1px solid var(--s-border); border-radius: 4px; font-size: 10px; color: var(--s-mid); cursor: pointer; }
+  .scr-head .ub.active { color: var(--s-primary); border-color: var(--s-primary); background: rgba(46, 134, 171, 0.05); }
+  .scr-body { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; padding: 12px; min-height: 360px; }
+  .scr-chat { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 360px; font-size: 12px; }
+  .scr-chat::-webkit-scrollbar { width: 5px; }
+  .scr-msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; line-height: 1.45; animation: msgIn 0.45s var(--spring); }
+  @keyframes msgIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .scr-msg.bot { background: var(--s-bot); align-self: flex-start; border-bottom-left-radius: 3px; }
+  .scr-msg.bot::before { content: 'D'; display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: var(--s-success); color: #fff; text-align: center; font-size: 10px; line-height: 18px; font-weight: 700; margin-right: 6px; vertical-align: middle; }
+  .scr-msg.user { background: var(--s-user); align-self: flex-end; border-bottom-right-radius: 3px; color: #0f4c5c; }
+  .scr-typing { background: var(--s-bot); align-self: flex-start; border-radius: 10px; padding: 8px 14px; }
+  .scr-typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--s-mid); margin: 0 1px; animation: dots 1.2s infinite; }
+  .scr-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .scr-typing span:nth-child(3) { animation-delay: 0.4s; }
+  .scr-scorecard { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 6px; padding: 12px; overflow-y: auto; max-height: 360px; font-size: 12px; }
+  .sc-progress { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 12px; }
+  .sc-progress .label { color: var(--s-text); font-weight: 600; }
+  .sc-progress .bar { flex: 1; height: 6px; background: var(--s-border); border-radius: 3px; overflow: hidden; }
+  .sc-progress .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--s-primary), var(--s-success)); transition: width 0.6s var(--spring); }
+  .sc-progress .pct { color: var(--s-mid); font-family: var(--mono); font-size: 10.5px; }
+  .sc-criteria { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .sc-crit { border: 1px solid var(--s-border); border-radius: 4px; padding: 7px 10px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: all 0.4s var(--spring); }
+  .sc-crit .nm { font-weight: 600; }
+  .sc-crit .st { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+  .sc-crit.wait .st { background: var(--s-border); color: var(--s-mid); }
+  .sc-crit.met { background: var(--s-success-bg); border-left: 3px solid var(--s-success); transform: scale(1.02); box-shadow: 0 4px 14px rgba(76,175,80,0.15); }
+  .sc-crit.met .st { background: var(--s-success); color: #fff; }
+  .sc-crit.unmet { background: var(--s-fail-bg); border-left: 3px solid var(--s-fail); }
+  .sc-crit.unmet .st { background: var(--s-fail); color: #fff; }
+  .sc-items { display: flex; flex-direction: column; gap: 6px; }
+  .sc-item { background: #fafbfc; border: 1px solid var(--s-border); border-radius: 4px; padding: 8px 10px; font-size: 10.5px; line-height: 1.45; animation: msgIn 0.45s var(--spring); }
+  .sc-item .code { font-weight: 700; color: var(--s-primary); margin-right: 6px; }
+  .sc-item .q { color: var(--s-text); }
+  .sc-item .ans { color: var(--s-mid); font-style: italic; margin-top: 3px; }
+  .sc-item .verdict { display: inline-block; margin-top: 4px; padding: 1px 6px; border-radius: 3px; font-size: 9px; }
+  .sc-item .verdict.met { background: var(--s-success); color: #fff; }
+  .sc-item .verdict.unmet { background: var(--s-fail); color: #fff; }
+  .scr-controls { padding: 10px 12px; border-top: 1px solid var(--s-border); display: flex; gap: 8px; justify-content: flex-end; background: var(--s-card); }
+  .scr-controls button { padding: 6px 14px; border: 1px solid var(--s-primary); background: #fff; color: var(--s-primary); border-radius: 4px; font-size: 11px; cursor: pointer; font-family: var(--body); font-weight: 600; transition: all 0.2s; }
+  .scr-controls button.primary { background: var(--s-primary); color: #fff; }
+  .scr-controls button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(46,134,171,0.25); }
+  .scr-controls button.playing { background: #ff9800; border-color: #ff9800; color: #fff; }
+
+  /* === ML pipeline (Section 6) === */
+  .ml-frame { background: #0a0e1c; color: var(--white); padding: 22px; font-family: var(--body); position: relative; }
+  .ml-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+  .ml-stat { background: linear-gradient(180deg, rgba(0,255,255,0.05), transparent); border: 1px solid var(--line); border-radius: 6px; padding: 18px 12px; text-align: center; transition: all 0.4s var(--spring); }
+  .ml-stat:hover { border-color: rgba(0,255,255,0.4); transform: translateY(-3px); box-shadow: 0 10px 30px -10px rgba(0,255,255,0.25); }
+  .ml-stat .value { font-family: var(--display); font-size: 36px; font-weight: 700; color: var(--cyan); line-height: 1; text-shadow: 0 0 24px rgba(0,255,255,0.4); }
+  .ml-stat .label { font-family: var(--mono); font-size: 10px; color: var(--mid); letter-spacing: 1px; margin-top: 6px; text-transform: uppercase; }
+  .pipeline-wrap { position: relative; }
+  .pipeline-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .pipeline-flow { display: flex; align-items: stretch; justify-content: space-between; gap: 0; position: relative; z-index: 2; }
+  .pf-step { flex: 1; min-width: 0; background: rgba(19,26,46,0.9); border: 1px solid var(--line); border-radius: 6px; padding: 12px 8px; text-align: center; transition: all 0.4s var(--spring); cursor: pointer; position: relative; backdrop-filter: blur(2px); }
+  .pf-step.active, .pf-step:hover { background: rgba(0,255,255,0.08); border-color: var(--cyan); box-shadow: 0 0 30px -4px rgba(0,255,255,0.5); transform: translateY(-2px); }
+  .pf-step .icon { font-size: 18px; margin-bottom: 6px; display: block; transition: transform 0.4s; }
+  .pf-step.active .icon, .pf-step:hover .icon { transform: scale(1.2); }
+  .pf-step .nm { font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; color: var(--white); }
+  .pf-step .det { font-size: 10px; color: var(--mid); margin-top: 4px; }
+  .pf-arrow { align-self: center; color: var(--cyan); font-size: 18px; padding: 0 4px; opacity: 0.6; }
+  .pf-detail { margin-top: 20px; padding: 14px 16px; background: rgba(0,255,255,0.04); border-left: 2px solid var(--cyan); border-radius: 0 4px 4px 0; font-size: 13px; line-height: 1.6; min-height: 70px; transition: opacity 0.3s; }
+  .pf-detail .ttl { font-family: var(--mono); font-size: 11px; color: var(--cyan); letter-spacing: 1px; display: block; margin-bottom: 4px; }
+
+  /* Reveal */
+  .show-all .reveal, .show-all .reveal-r, .show-all .stagger > * { opacity: 1 !important; transform: none !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal-r, .stagger > * { opacity: 1 !important; transform: none !important; }
+    .aurora, .hero-title { animation: none !important; }
+  }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s var(--spring); }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+  .reveal-r { opacity: 0; transform: translateX(40px); transition: opacity 0.9s ease, transform 0.9s var(--spring); }
+  .reveal-r.in-view { opacity: 1; transform: translateX(0); }
+  .stagger > * { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s var(--spring); }
+  .stagger.in-view > * { opacity: 1; transform: translateY(0); }
+  .stagger.in-view > *:nth-child(1) { transition-delay: 0.1s; }
+  .stagger.in-view > *:nth-child(2) { transition-delay: 0.2s; }
+  .stagger.in-view > *:nth-child(3) { transition-delay: 0.3s; }
+  .stagger.in-view > *:nth-child(4) { transition-delay: 0.4s; }
+  .stagger.in-view > *:nth-child(5) { transition-delay: 0.5s; }
+
+  footer.foot { padding: 48px 64px; text-align: center; border-top: 1px solid var(--line); color: var(--mid-2); font-family: var(--mono); font-size: 11px; letter-spacing: 2px; position: relative; z-index: 2; }
+
+  @media (max-width: 980px) {
+    section.slide { padding: 100px 22px 60px; }
+    .container { grid-template-columns: 1fr; gap: 36px; }
+    nav.topnav { padding: 14px 18px; }
+    .nav-links { display: none; }
+    .bdpi-body, .scr-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles-bg"></canvas>
+<div class="aurora"></div>
+<div id="grid-bg"></div>
+<div class="spotlight" id="spotlight"></div>
+
+<nav class="topnav">
+  <div class="brand"><span class="dot"></span>Lab Meeting · 2026.05.18</div>
+  <div class="nav-links">
+    <a href="#s1">01 다봄</a>
+    <a href="#s2">02 AMT 채점</a>
+    <a href="#s3">03 성격 평가</a>
+    <a href="#s4">04 BDPI 보고서</a>
+    <a href="#s5">05 스크리닝</a>
+    <a href="#s6">06 우울 분류</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-pre">LAB MEETING · 2026.05.18</div>
+  <h1 class="hero-title">다봄 · AMT · 성격 평가<br/>BDPI · 스크리닝 · 우울 분류</h1>
+  <p class="hero-sub">6개 진행 프로젝트의 인터랙티브 시연</p>
+  <div class="hero-meta">SCROLL ↓</div>
+  <div class="scroll-hint">START</div>
+</section>
+
+<!-- ============ SECTION 1 : DABOM CHAT ============ -->
+<section id="s1" class="slide">
+  <div class="container">
+    <div class="left">
+      <div class="chip reveal"><span class="num">01</span><span class="sep">/</span><span>06</span><span class="sep">·</span><span class="tag">온디바이스 AI · 다봄 (Dabom)</span></div>
+      <h1 class="title reveal">모바일에서 동작하는<br/><span class="gradient">로컬 LLM 자전적 기억 훈련 시스템</span></h1>
+      <p class="subtitle reveal">On-Device LLM · Autobiographical Memory Training</p>
+      <ul class="bullets stagger">
+        <li><span class="mono">Gemma 3</span> (E2B-it 4bit, ~2GB)</li>
+        <li>외부 API 무의존 · 개인정보 <span class="mono">100% 로컬</span> 처리</li>
+        <li><span class="mono">LightRAG</span> 지식 그래프 + 한국어 임베딩 (multilingual-e5-small-ko)</li>
+        <li class="dev">LLM-wiki 개발 중</li>
+        <li class="dev">Network 시각화 개발 중</li>
+      </ul>
+      <p class="hint">→ <span class="key">▶ Play Demo</span> · LightRAG 기반 기억 분석 chat 시연</p>
+    </div>
+    <div class="right reveal-r">
+      <div class="device-frame">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">dabom · <span class="tl-tag">~/project/dabom_gemma</span></div>
+        </div>
+        <div class="tui">
+          <div class="tui-ticker"><span class="scroll">기억 속보 · 오늘의 단서를 기다리는 중   ·   기억 속보 · 오늘의 단서를 기다리는 중   ·   기억 속보 · 오늘의 단서를 기다리는 중   ·   </span></div>
+          <div class="tui-banner">
+            <pre class="ascii-dabom">██████╗  █████╗ ██████╗  ██████╗ ███╗   ███╗
+██╔══██╗██╔══██╗██╔══██╗██╔═══██╗████╗ ████║
+██║  ██║███████║██████╔╝██║   ██║██╔████╔██║
+██║  ██║██╔══██║██╔══██╗██║   ██║██║╚██╔╝██║
+██████╔╝██║  ██║██████╔╝╚██████╔╝██║ ╚═╝ ██║
+╚═════╝ ╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝     ╚═╝</pre>
+            <div class="tui-info">
+              <div>다봄이</div>
+              <div><span class="lbl">Mode</span> <span class="val cue">Chat</span></div>
+              <div><span class="lbl">model</span> gemma-4-e2b-it-4bit</div>
+              <div><span class="lbl">ctx</span>   4096</div>
+              <div><span class="lbl">temp</span>  0.2</div>
+            </div>
+          </div>
+          <div class="mem-graph">
+            <div class="label">▸ MEMORY GRAPH (LightRAG)</div>
+            <svg id="mem-svg"></svg>
+          </div>
+          <div class="tui-body" id="s1-body"></div>
+          <button class="tui-run" id="s1-play">▶ Play Demo</button>
+          <div class="tui-input">
+            <span class="prompt">&gt;</span>
+            <input id="s1-input" placeholder="메시지 또는 /train, /chat, /new" autocomplete="off" />
+            <button class="send" id="s1-send">Send</button>
+          </div>
+          <div class="tui-status">
+            <span><span class="mode" id="s1-mode">Chat Mode</span> · 기억 <span id="s1-memcount">8</span>개</span>
+            <span style="color:var(--tui-cue)">mlx-community/gemma-4-e2b-it-4bit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 2 : AMT SCORING ============ -->
+<section id="s2" class="slide">
+  <div class="container">
+    <div class="left">
+      <div class="chip reveal"><span class="num">02</span><span class="sep">/</span><span>06</span><span class="sep">·</span><span class="tag">LLM · AMT 자동 채점</span></div>
+      <h1 class="title reveal">로컬 Gemma 파인튜닝으로<br/><span class="gradient">AMT 자동 채점</span></h1>
+      <p class="subtitle reveal">AMT (Autobiographical Memory Test) Auto-Scoring · On-Device</p>
+      <ul class="bullets stagger">
+        <li><span class="mono">LoRA fine-tuning</span></li>
+        <li>다봄 시스템과 동일 모델 → <span style="color:var(--cyan)">채점 일관성 확보</span></li>
+      </ul>
+      <p class="hint">→ <span class="key">▶ Run Scoring</span> 버튼으로 8요소 채점 시연</p>
+    </div>
+    <div class="right reveal-r">
+      <div class="device-frame">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">dabom · <span class="tl-tag">training mode</span></div>
+        </div>
+        <div class="tui">
+          <div class="tui-banner">
+            <pre class="ascii-dabom" style="color:#d8be7f">██████╗  █████╗ ██████╗  ██████╗ ███╗   ███╗
+██╔══██╗██╔══██╗██╔══██╗██╔═══██╗████╗ ████║
+██║  ██║███████║██████╔╝██║   ██║██╔████╔██║
+██║  ██║██╔══██║██╔══██╗██║   ██║██║╚██╔╝██║
+██████╔╝██║  ██║██████╔╝╚██████╔╝██║ ╚═╝ ██║
+╚═════╝ ╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝     ╚═╝</pre>
+            <div class="tui-info">
+              <div>다봄이</div>
+              <div><span class="lbl">Mode</span> <span class="val cue">Training</span></div>
+              <div><span class="lbl">cue</span>   <span class="val cue">"커피"</span></div>
+              <div><span class="lbl">attempt</span> 1 / 1</div>
+            </div>
+          </div>
+          <div class="tui-body" id="s2-body">
+            <div class="tui-msg bot">'커피'(와) 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>
+          </div>
+          <div class="think-prog" id="s2-think"><span>▶ Think</span><span class="pb"><i></i></span><span id="s2-think-t">0.0초</span></div>
+          <button class="tui-run" id="s2-run">▶ Run Scoring</button>
+          <div class="score-bar" id="s2-scores">
+            <span class="s wait" data-c="subj">주관적경험</span>
+            <span class="s wait" data-c="time">시간</span>
+            <span class="s wait" data-c="place">공간</span>
+            <span class="s wait" data-c="event">사건</span>
+            <span class="s wait" data-c="emo">감정</span>
+            <span class="s wait" data-c="think">생각</span>
+            <span class="s wait" data-c="ppl">인물</span>
+            <span class="s wait" data-c="sense">감각</span>
+          </div>
+          <div class="tui-status">
+            <span><span class="mode training">Training Mode</span> · cue:"커피"</span>
+            <span style="color:var(--tui-cue)">structured-output enabled</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 3 : LLM PERSONALITY ============ -->
+<section id="s3" class="slide">
+  <div class="container">
+    <div class="left">
+      <div class="chip reveal"><span class="num">03</span><span class="sep">/</span><span>06</span><span class="sep">·</span><span class="tag">LLM · 성격 평가</span></div>
+      <h1 class="title reveal">실제 구조화 면담 데이터를 활용한<br/><span class="gradient">LLM 기반 성격 평가</span></h1>
+      <p class="subtitle reveal">LLM-Based Personality Assessment from Structured Interviews</p>
+      <ul class="bullets stagger">
+        <li><span class="mono">N=425</span> · 20개 구조화 면담 질문 · BDPI T점수 추정</li>
+        <li>일반 성격 5요인, 부적응 성격 5요인</li>
+        <li><span class="mono">GPT-5 Mini · CoT</span> 프롬프트 평균 <span class="mono">r = 0.525</span> (외향성 <span class="mono">r = 0.815</span>)</li>
+      </ul>
+      <p class="hint">→ 탭 클릭으로 5요인 전환 · 레이더 차트가 morph</p>
+    </div>
+    <div class="right reveal-r">
+      <div class="device-frame">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">BDPI AI Interview · <span class="tl-tag">presentation.html</span></div>
+        </div>
+        <div class="bdpi-frame">
+          <div class="bdpi-nav">
+            <div class="logo">BDPI AI Interview</div>
+            <a class="active">개요</a><a>방법</a><a>결과</a><a>스케일링</a><a>향후 계획</a>
+          </div>
+          <div class="bdpi-body">
+            <div>
+              <div class="bdpi-tabs">
+                <div class="bdpi-tab active" data-tab="general">일반 성격 5요인<span class="ttag">GENERAL</span></div>
+                <div class="bdpi-tab mal" data-tab="mal">부적응 성격 5요인<span class="ttag">MALADAPTIVE</span></div>
+              </div>
+              <div class="dim-list" id="dim-list"></div>
+            </div>
+            <div class="radar-wrap">
+              <div class="rh" id="radar-title">▸ BDPI T-SCORE · GENERAL</div>
+              <svg class="radar-svg" id="radar-svg" viewBox="-130 -130 260 260"></svg>
+              <div class="factor-tag" id="radar-tag">N=425 · GPT-5 Mini · CoT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 4 : BDPI REPORT 9-grid ============ -->
+<section id="s4" class="slide">
+  <div class="container">
+    <div class="left">
+      <div class="chip reveal"><span class="num">04</span><span class="sep">/</span><span>06</span><span class="sep">·</span><span class="tag">BDPI · 리더십 보고서 자동화</span></div>
+      <h1 class="title reveal">BDPI-SF 응답 CSV →<br/>다중페이지 <span class="gradient">PDF 보고서 자동 생성</span></h1>
+      <p class="subtitle reveal">Automated BDPI Leadership Report Generation</p>
+      <ul class="bullets stagger">
+        <li>T점수 자동 변환 → 리더십 유형 → Rule based 해석 → LLM 해석</li>
+        <li>한 · 영 다국어 지원</li>
+        <li>일반 버전과 리더쉽 버전</li>
+      </ul>
+      <p class="hint">→ ▶ 차트 애니메이션 + LLM이 해석문을 실시간 작성</p>
+    </div>
+    <div class="right reveal-r">
+      <div class="device-frame">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">mindeep · <span class="tl-tag">sample_report.pdf</span></div>
+        </div>
+        <div class="report-frame">
+          <div class="report-head"></div>
+          <div class="report-body">
+            <div class="report-meta"><span>BDPI-SF 보고서</span><span class="right">mindeep-251106-001</span></div>
+            <h3 class="report-h">리더 성격 유형 <span class="en">Leader Personality Type</span></h3>
+            <div class="grid9" id="grid9">
+              <div class="grid-corner"></div>
+              <div class="col-h">정서지능 상</div>
+              <div class="col-h">정서지능 중</div>
+              <div class="col-h">정서지능 하</div>
+              <div class="axis-y">정서민감성 (ES)</div>
+              <div class="cell" data-row="high" data-col="high"><span class="name">감정소통형</span><span class="axis-info">ES상·EI상</span></div>
+              <div class="cell" data-row="high" data-col="mid"><span class="name">신뢰공감형</span><span class="axis-info">ES상·EI중</span></div>
+              <div class="cell" data-row="high" data-col="low"><span class="name">안정공감형</span><span class="axis-info">ES상·EI하</span></div>
+              <div class="cell" data-row="mid" data-col="high"><span class="name">감정조율형</span><span class="axis-info">ES중·EI상</span></div>
+              <div class="cell selected" data-row="mid" data-col="mid"><span class="name">균형유지형</span><span class="axis-info">ES중·EI중</span></div>
+              <div class="cell" data-row="mid" data-col="low"><span class="name">침착대응형</span><span class="axis-info">ES중·EI하</span></div>
+              <div class="cell" data-row="low" data-col="high"><span class="name">민감반응형</span><span class="axis-info">ES하·EI상</span></div>
+              <div class="cell" data-row="low" data-col="mid"><span class="name">신중절제형</span><span class="axis-info">ES하·EI중</span></div>
+              <div class="cell" data-row="low" data-col="low"><span class="name">감정절제형</span><span class="axis-info">ES하·EI하</span></div>
+            </div>
+            <div class="report-axis-bottom">정서지능 (EI) →</div>
+            <h3 class="report-h">AI 자동 해석 <span class="en">LLM Interpretation</span></h3>
+            <div class="llm-interp">
+              <div class="llm-meta">
+                <span>▸ GPT-4o · 균형유지형 (ES중·EI중)</span>
+                <button class="llm-replay" id="llm-replay">↻ Replay</button>
+              </div>
+              <div class="llm-stream" id="llm-stream"><span class="cursor"></span></div>
+            </div>
+            <h3 class="report-h">전체 프로파일 <span class="en">Profile</span></h3>
+            <div class="factor-bars" id="factor-bars">
+              <div class="fb-block">
+                <div class="fb-h">일반 성격 5요인</div>
+                <div class="fb-row"><span class="lbl">외향-내향성</span><span class="bar"><i data-w="55"></i></span><span class="val">55</span></div>
+                <div class="fb-row"><span class="lbl">수용-냉철</span><span class="bar"><i data-w="62"></i></span><span class="val">62</span></div>
+                <div class="fb-row"><span class="lbl">성실-유연</span><span class="bar"><i data-w="48"></i></span><span class="val">48</span></div>
+                <div class="fb-row"><span class="lbl">개방-관습</span><span class="bar"><i data-w="51"></i></span><span class="val">51</span></div>
+                <div class="fb-row"><span class="lbl">정서지능</span><span class="bar"><i data-w="58"></i></span><span class="val">58</span></div>
+              </div>
+              <div class="fb-block mal">
+                <div class="fb-h">부적응적 성격 5요인</div>
+                <div class="fb-row"><span class="lbl">탈애착</span><span class="bar"><i data-w="42"></i></span><span class="val">42</span></div>
+                <div class="fb-row"><span class="lbl">자기과시</span><span class="bar"><i data-w="38"></i></span><span class="val">38</span></div>
+                <div class="fb-row"><span class="lbl">조절약화</span><span class="bar"><i data-w="47"></i></span><span class="val">47</span></div>
+                <div class="fb-row"><span class="lbl">사고/지각특이성</span><span class="bar"><i data-w="35"></i></span><span class="val">35</span></div>
+                <div class="fb-row"><span class="lbl">정서민감성</span><span class="bar"><i data-w="50"></i></span><span class="val">50</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="report-foot"></div>
+          <div class="report-brand">
+            <span class="logo">min<span>deep</span></span>
+            <span>© 2021 마음건강케이유(주). All Rights Reserved.</span>
+            <span>1 / 8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 5 : SOCIAL ISOLATION SCREENING ============ -->
+<section id="s5" class="slide">
+  <div class="container">
+    <div class="left">
+      <div class="chip reveal"><span class="num">05</span><span class="sep">/</span><span>06</span><span class="sep">·</span><span class="tag">LLM · 사회적 고립 스크리닝</span></div>
+      <h1 class="title reveal">인터뷰 에이전트로<br/><span class="gradient">사회적 고립 자동 스크리닝</span></h1>
+      <p class="subtitle reveal">LLM Screening Agent · Social Isolation Interview</p>
+      <ul class="bullets stagger">
+        <li>챗 기반 인터뷰 + <span style="color:var(--cyan)">전문가 검토 기능</span></li>
+        <li>21개 구조화 질문 + 자동 채점 + 자동 재질문</li>
+        <li>Rule based + LLM</li>
+      </ul>
+      <p class="hint">→ <span class="key">▶ Play</span> 버튼으로 인터뷰 자동 진행 (실시간 채점)</p>
+    </div>
+    <div class="right reveal-r">
+      <div class="device-frame">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">Dabom · <span class="tl-tag">localhost:8501/chat</span></div>
+        </div>
+        <div class="scr-frame">
+          <div class="scr-head">
+            <div class="logo">Dabom <span class="sub">SOCIAL ISOLATION ASSESSMENT</span></div>
+            <div class="badges"><span class="ub">사용자 (인터뷰)</span><span class="ub active">검사자 (검토)</span></div>
+          </div>
+          <div class="scr-body">
+            <div class="scr-chat" id="scr-chat">
+              <div class="scr-msg bot">안녕하세요. 사회적 고립 평가 인터뷰를 시작하겠습니다.</div>
+            </div>
+            <div class="scr-scorecard">
+              <div class="sc-progress">
+                <span class="label">진행률</span>
+                <div class="bar"><i id="sc-progress-bar" style="width:0%"></i></div>
+                <span class="pct" id="sc-progress-text">0 / 7</span>
+              </div>
+              <div class="sc-criteria">
+                <div class="sc-crit wait" id="crit-A"><span class="nm">A 재택</span><span class="st">대기</span></div>
+                <div class="sc-crit wait" id="crit-B"><span class="nm">B 상호작용</span><span class="st">대기</span></div>
+                <div class="sc-crit wait" id="crit-C"><span class="nm">C 사회적 지지</span><span class="st">대기</span></div>
+                <div class="sc-crit wait" id="crit-D"><span class="nm">D 기능 손상</span><span class="st">대기</span></div>
+              </div>
+              <div class="sc-items" id="sc-items"></div>
+            </div>
+          </div>
+          <div class="scr-controls">
+            <button id="scr-reset">↻ 재시작</button>
+            <button class="primary" id="scr-play">▶ Play</button>
+            <button id="scr-next">다음 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 6 : DEPRESSION ML ============ -->
+<section id="s6" class="slide">
+  <div class="container">
+    <div class="left">
+      <div class="chip reveal"><span class="num">06</span><span class="sep">/</span><span>06</span><span class="sep">·</span><span class="tag">머신러닝 · 우울 분류</span></div>
+      <h1 class="title reveal">자전적 기억 면담 멀티모달 특징으로<br/><span class="gradient">우울증 자동 분류</span></h1>
+      <p class="subtitle reveal">Multimodal ML on Autobiographical Memory Interviews</p>
+      <p class="hint">→ 파이프라인 단계 hover · 파티클이 데이터 흐름 시각화</p>
+    </div>
+    <div class="right reveal-r">
+      <div class="device-frame">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <div class="device-titlebar">
+          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+          <div class="tl-title">am_ml_v1 · <span class="tl-tag">depression_classifier.ipynb</span></div>
+        </div>
+        <div class="ml-frame">
+          <div class="ml-stats stagger">
+            <div class="ml-stat"><div class="value" data-target="532" data-decimal="0">0</div><div class="label">참가자 (N)</div></div>
+            <div class="ml-stat"><div class="value" data-target="40" data-decimal="0">0</div><div class="label">멀티모달 특징</div></div>
+            <div class="ml-stat"><div class="value" data-target="0.68" data-decimal="2">0</div><div class="label">최고 AUC (XGB)</div></div>
+          </div>
+          <div class="pipeline-wrap">
+            <canvas class="pipeline-canvas" id="pipe-canvas"></canvas>
+            <div class="pipeline-flow" id="ml-pipeline">
+              <div class="pf-step active" data-step="data">
+                <span class="icon">🗄</span>
+                <div class="nm">DATA</div>
+                <div class="det">AI Hub · 60+</div>
+              </div>
+              <div class="pf-arrow">→</div>
+              <div class="pf-step" data-step="feat">
+                <span class="icon">🧬</span>
+                <div class="nm">FEATURES</div>
+                <div class="det">AM·Text·Audio · 88</div>
+              </div>
+              <div class="pf-arrow">→</div>
+              <div class="pf-step" data-step="sel">
+                <span class="icon">⚗</span>
+                <div class="nm">SELECTION</div>
+                <div class="det">top-K · 40</div>
+              </div>
+              <div class="pf-arrow">→</div>
+              <div class="pf-step" data-step="model">
+                <span class="icon">⚙</span>
+                <div class="nm">MODELS</div>
+                <div class="det">SVM·RF·XGB</div>
+              </div>
+              <div class="pf-arrow">→</div>
+              <div class="pf-step" data-step="shap">
+                <span class="icon">🎯</span>
+                <div class="nm">SHAP</div>
+                <div class="det">interpret</div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-detail" id="pf-detail">
+            <span class="ttl">▸ DATA COLLECTION</span>
+            AI Hub 데이터셋의 자전적 기억 면담 (N=532, 60대 이상). 텍스트·음성·구조화 메타데이터 수집.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">END · LAB MEETING · 2026.05.18 · KOREA UNIVERSITY</footer>
+
+<script>
+  if (location.search.includes('showall')) {
+    document.body.classList.add('show-all');
+    document.querySelectorAll('.ml-stat .value').forEach(el => {
+      const d = parseInt(el.dataset.decimal || '0');
+      const t = parseFloat(el.dataset.target);
+      el.textContent = t.toFixed(d);
+    });
+    // Pre-fill streaming text for static capture
+    setTimeout(() => {
+      const ls = document.getElementById('llm-stream');
+      if (ls && !ls.textContent.trim()) {
+        ls.innerHTML = '<span class="streamed">균형유지형은 정서민감성과 정서지능이 모두 중간 수준에 위치한 안정적인 리더 유형입니다. 정서 자극에 과민하게 반응하지 않으면서도, 상황에 따라 유연하게 공감과 단호함을 조절할 수 있습니다. 조직 내 갈등 상황에서 중재자 역할을 자연스럽게 수행하며, 팀의 정서적 균형을 유지하는 안정감 있는 리더십을 보입니다. 다만 강한 결단이 필요한 순간에는 의사 결정 속도를 점검해 볼 필요가 있습니다.</span>';
+        ls.classList.add('done');
+      }
+    }, 100);
+  }
+
+  // ===== Spotlight =====
+  const spot = document.getElementById('spotlight');
+  addEventListener('mousemove', e => { spot.style.left = e.clientX + 'px'; spot.style.top = e.clientY + 'px'; });
+
+  // ===== Particles background =====
+  (function() {
+    const c = document.getElementById('particles-bg');
+    const ctx = c.getContext('2d');
+    let W, H, particles = [];
+    function resize() {
+      W = c.width = innerWidth; H = c.height = innerHeight;
+      particles = Array.from({ length: 60 }, () => ({
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.15, vy: (Math.random() - 0.5) * 0.15,
+        r: Math.random() * 1.5 + 0.4,
+        hue: Math.random() < 0.5 ? 195 : 280,
+      }));
+    }
+    resize(); addEventListener('resize', resize);
+    function tick() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 90%, 60%, 0.5)`;
+        ctx.fill();
+      });
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
+
+  // ===== Reveal IO =====
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); }), { threshold: 0.15 });
+  document.querySelectorAll('.reveal, .reveal-r, .stagger').forEach(el => io.observe(el));
+
+  // ===== Counter =====
+  const cIO = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseFloat(el.dataset.target);
+      const dec = parseInt(el.dataset.decimal || '0');
+      const dur = 1800, start = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = (target * eased).toFixed(dec);
+        if (t < 1) requestAnimationFrame(step); else el.textContent = target.toFixed(dec);
+      }
+      requestAnimationFrame(step);
+      cIO.unobserve(el);
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.ml-stat .value').forEach(el => cIO.observe(el));
+
+  // ===== Nav active =====
+  const navLinks = document.querySelectorAll('.nav-links a');
+  new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      const id = e.target.id;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    });
+  }, { threshold: 0.4 }).observe.bind(null);
+  document.querySelectorAll('section.slide').forEach(s => new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { const id = e.target.id; navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id)); } });
+  }, { threshold: 0.4 }).observe(s));
+
+  // ===== Bar fill on view =====
+  new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.querySelectorAll('.bar > i').forEach((b, i) => {
+        const w = b.dataset.w;
+        setTimeout(() => b.style.width = w + '%', i * 80);
+      });
+    });
+  }, { threshold: 0.3 }).observe(document.getElementById('factor-bars'));
+
+  // ===== Section 1 : Dabom Chat with streaming =====
+  const s1Body = document.getElementById('s1-body');
+  const s1Input = document.getElementById('s1-input');
+  const s1Send = document.getElementById('s1-send');
+  const s1Mode = document.getElementById('s1-mode');
+  const s1MemCount = document.getElementById('s1-memcount');
+
+  async function streamText(el, text, speed = 18) {
+    el.innerHTML = '<span class="streamed"></span><span class="cursor"></span>';
+    const target = el.querySelector('.streamed');
+    for (let i = 0; i <= text.length; i++) {
+      target.textContent = text.slice(0, i);
+      s1Body.scrollTop = s1Body.scrollHeight;
+      await new Promise(r => setTimeout(r, speed + Math.random() * 20));
+    }
+    el.classList.add('done');
+  }
+  async function s1AddBot(text, instant = false) {
+    const d = document.createElement('div'); d.className = 'tui-msg bot';
+    s1Body.appendChild(d);
+    if (instant) { d.textContent = text; d.classList.add('done'); }
+    else await streamText(d, text);
+    s1Body.scrollTop = s1Body.scrollHeight;
+  }
+  function s1AddUser(text) {
+    const d = document.createElement('div'); d.className = 'tui-msg user done'; d.textContent = text;
+    s1Body.appendChild(d); s1Body.scrollTop = s1Body.scrollHeight;
+  }
+  function s1AddSystem(text) {
+    const d = document.createElement('div'); d.className = 'tui-msg system done'; d.textContent = text;
+    s1Body.appendChild(d); s1Body.scrollTop = s1Body.scrollHeight;
+  }
+  function s1TypingShow() {
+    const d = document.createElement('div'); d.className = 'tui-msg bot done typing';
+    d.innerHTML = '다봄이 생각 중<span class="typing-dots"><span></span><span></span><span></span></span>';
+    s1Body.appendChild(d); s1Body.scrollTop = s1Body.scrollHeight;
+    return d;
+  }
+  async function s1Init() {
+    await s1AddBot('안녕하세요!');
+    await s1AddBot('무엇을 도와드릴까요?');
+    await s1AddBot('기억 훈련을 하고 싶으시면 /train 명령을 입력해주세요.');
+  }
+  let s1Busy = false;
+  async function s1Submit() {
+    if (s1Busy) return;
+    const t = s1Input.value.trim(); if (!t) return;
+    s1Busy = true; s1AddUser(t); s1Input.value = '';
+    const typing = s1TypingShow();
+    await new Promise(r => setTimeout(r, 600));
+    typing.remove();
+    let reply;
+    if (t === '/train') {
+      s1Mode.textContent = 'Training Mode'; s1Mode.style.color = 'var(--tui-cue)';
+      await s1AddBot('훈련 모드로 전환합니다. 어떤 단서로 시작할까요? (예: 커피, 비, 학교)');
+    } else if (t === '/chat') {
+      s1Mode.textContent = 'Chat Mode'; s1Mode.style.color = 'var(--tui-user)';
+      s1AddSystem('대화 모드로 전환했습니다.');
+    } else if (t === '/new') {
+      s1Body.innerHTML = ''; s1Init();
+    } else if (t.startsWith('/')) {
+      s1AddSystem('알 수 없는 명령입니다. /train · /chat · /new 사용 가능');
+    } else {
+      const responses = [
+        '네, 잘 들었어요. 그 기억에 대해 좀 더 말씀해주실 수 있을까요?',
+        '흥미로운 이야기네요. 그때 어떤 감정이 드셨나요?',
+        '그렇군요. 함께 있었던 사람이 있었나요?',
+      ];
+      await s1AddBot(responses[Math.floor(Math.random() * responses.length)]);
+      s1MemCount.textContent = parseInt(s1MemCount.textContent) + 1;
+    }
+    s1Busy = false;
+  }
+  s1Send.addEventListener('click', s1Submit);
+  s1Input.addEventListener('keydown', e => { if (e.key === 'Enter') s1Submit(); });
+  s1Init();
+
+  // ----- S1 Play Demo (auto-run example) -----
+  const s1Play = document.getElementById('s1-play');
+  let s1Demo = false;
+
+  async function s1TypeInput(text, speed = 70) {
+    for (let i = 0; i <= text.length; i++) {
+      s1Input.value = text.slice(0, i);
+      await new Promise(r => setTimeout(r, speed));
+    }
+  }
+
+  async function s1HighlightGraph(names, baseDelay = 130) {
+    const nodeEls = document.querySelectorAll('#mem-svg .node');
+    for (const name of names) {
+      const node = Array.from(nodeEls).find(n => n.querySelector('text')?.textContent === name);
+      if (!node) continue;
+      const circle = node.querySelector('circle');
+      const prevFilter = circle.style.filter;
+      circle.style.transition = 'filter 0.25s ease, fill-opacity 0.25s ease';
+      circle.style.filter = 'drop-shadow(0 0 8px currentColor) brightness(1.6)';
+      circle.setAttribute('fill-opacity', '0.95');
+      await new Promise(r => setTimeout(r, baseDelay));
+      setTimeout(() => {
+        circle.style.filter = prevFilter;
+        circle.setAttribute('fill-opacity', '0.4');
+      }, 1200);
+    }
+  }
+
+  async function s1PlayDemo() {
+    if (s1Demo || s1Busy) return;
+    s1Demo = true; s1Busy = true;
+    s1Play.disabled = true; s1Play.textContent = '⏳ Demo 진행 중 ...';
+    s1Input.disabled = true; s1Send.disabled = true;
+
+    // Reset chat
+    s1Body.innerHTML = '';
+    s1Mode.textContent = 'Chat Mode'; s1Mode.style.color = 'var(--tui-user)';
+    s1Input.value = '';
+    s1MemCount.textContent = '8';
+
+    // Greeting
+    await s1AddBot('안녕하세요! 저장된 기억에 대해 분석해 드릴 수 있어요.');
+    await s1AddBot('어떤 기억이 궁금하신가요?');
+    await new Promise(r => setTimeout(r, 600));
+
+    // User asks for analysis
+    const q = '최근에 어떤 기억들이 있었는지 분석해줘';
+    await s1TypeInput(q);
+    await new Promise(r => setTimeout(r, 200));
+    s1AddUser(q);
+    s1Input.value = '';
+
+    // Thinking
+    const t1 = s1TypingShow();
+    await new Promise(r => setTimeout(r, 700));
+    t1.remove();
+
+    // RAG tool calls (system messages)
+    s1AddSystem('▶ Tool: memory_search · query="최근 기억"');
+    await new Promise(r => setTimeout(r, 350));
+    s1AddSystem('▶ LightRAG: knowledge graph 탐색 중 ...');
+    await new Promise(r => setTimeout(r, 250));
+
+    // Highlight cluster 1 (한강 산책)
+    await s1HighlightGraph(['토요일', '비', '한강', '산책'], 140);
+    await new Promise(r => setTimeout(r, 300));
+    // Highlight cluster 2 (카페 커피)
+    await s1HighlightGraph(['카페', '커피', '아메리카노', '수진'], 140);
+    await new Promise(r => setTimeout(r, 400));
+
+    s1AddSystem('▶ retrieved: 8 nodes · 9 edges · 2 clusters');
+    await new Promise(r => setTimeout(r, 500));
+
+    // Analytical response (streamed)
+    await s1AddBot('두 가지 패턴이 발견됩니다.');
+    await s1AddBot('① 토요일 · 비 · 한강 · 산책 — 비 오는 토요일 한강 산책의 기억입니다.');
+    await s1AddBot('② 커피 · 카페 · 수진 · 아메리카노 — 동료 수진님과 카페에서 보내신 시간이네요.');
+    await s1AddBot('두 활동 모두 차분하고 휴식적인 톤입니다. 어느 쪽을 더 자세히 살펴볼까요?');
+
+    s1Demo = false; s1Busy = false;
+    s1Input.disabled = false; s1Send.disabled = false;
+    s1Play.disabled = false; s1Play.textContent = '↻ Replay Demo';
+  }
+  s1Play.addEventListener('click', s1PlayDemo);
+
+  // ===== Memory graph (D3 force) =====
+  (function() {
+    const svg = d3.select('#mem-svg');
+    const W = 600, H = 130; // viewBox
+    svg.attr('viewBox', `0 0 ${W} ${H}`);
+    const nodes = [
+      { id: '커피', g: 'cue', r: 7 },
+      { id: '한강', g: 'place', r: 6 },
+      { id: '수진', g: 'people', r: 5 },
+      { id: '비', g: 'cue', r: 5 },
+      { id: '토요일', g: 'time', r: 5 },
+      { id: '산책', g: 'event', r: 6 },
+      { id: '아메리카노', g: 'event', r: 5 },
+      { id: '카페', g: 'place', r: 5 },
+    ];
+    const links = [
+      { source: '커피', target: '카페' },
+      { source: '커피', target: '아메리카노' },
+      { source: '커피', target: '수진' },
+      { source: '카페', target: '수진' },
+      { source: '한강', target: '산책' },
+      { source: '비', target: '한강' },
+      { source: '토요일', target: '산책' },
+      { source: '토요일', target: '한강' },
+      { source: '산책', target: '수진' },
+    ];
+    const colors = { cue: '#d8be7f', place: '#7fc8bc', people: '#d6a37c', time: '#92b7d7', event: '#93c8b0' };
+    const linkG = svg.append('g').selectAll('.link').data(links).enter().append('line').attr('class', 'link');
+    const nodeG = svg.append('g').selectAll('.node').data(nodes).enter().append('g').attr('class', 'node');
+    nodeG.append('circle').attr('r', d => d.r).attr('fill', d => colors[d.g]).attr('fill-opacity', 0.4).attr('stroke', d => colors[d.g]).attr('stroke-width', 1.2);
+    nodeG.append('text').attr('dy', '-10').attr('text-anchor', 'middle').text(d => d.id);
+    const sim = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(40))
+      .force('charge', d3.forceManyBody().strength(-60))
+      .force('center', d3.forceCenter(W/2, H/2))
+      .force('collide', d3.forceCollide().radius(18))
+      .on('tick', () => {
+        linkG.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+    nodeG.on('mouseenter', function(_, d) {
+      d3.select(this).select('circle').transition().duration(200).attr('r', d.r * 1.6).attr('fill-opacity', 0.8);
+    }).on('mouseleave', function(_, d) {
+      d3.select(this).select('circle').transition().duration(200).attr('r', d.r).attr('fill-opacity', 0.4);
+    });
+  })();
+
+  // ===== Section 2 : AMT scoring with spring =====
+  const s2Run = document.getElementById('s2-run');
+  const s2Body = document.getElementById('s2-body');
+  const s2Think = document.getElementById('s2-think');
+  const s2ThinkPB = s2Think.querySelector('.pb i');
+  const s2ThinkT = document.getElementById('s2-think-t');
+  const s2Scores = document.querySelectorAll('#s2-scores .s');
+  const s2GT = ['done','done','done','done','done','done','fail','done']; // 7/8 detected
+
+  function s2Reset() {
+    s2Body.innerHTML = `<div class="tui-msg bot done">'커피'(와) 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>`;
+    s2Scores.forEach(s => { s.classList.remove('done','fail','scoring'); s.classList.add('wait'); });
+    s2Think.classList.remove('show'); s2ThinkPB.style.width = '0';
+    s2Run.disabled = false; s2Run.textContent = '▶ Run Scoring';
+  }
+  s2Run.addEventListener('click', async () => {
+    if (s2Run.textContent.includes('Reset')) { s2Reset(); return; }
+    s2Run.disabled = true; s2Run.textContent = '⏳ Scoring ...';
+
+    // type user input
+    const userMsg = document.createElement('div'); userMsg.className = 'tui-msg user';
+    s2Body.appendChild(userMsg);
+    await streamS2(userMsg, '어제 점심에 회사 근처 카페에서 동료 수진과 아메리카노를 마셨어요. 비가 와서 창밖을 한참 봤고, 따뜻한 잔을 들고 있던 손의 감촉이 좋았어요.', 12);
+    userMsg.classList.add('done');
+
+    // think progress
+    s2Think.classList.add('show');
+    const thinkDur = 2000, tStart = performance.now();
+    function thinkTick(now) {
+      const t = Math.min(1, (now - tStart) / thinkDur);
+      s2ThinkPB.style.width = (t * 100) + '%';
+      s2ThinkT.textContent = (t * 24.9).toFixed(1) + '초';
+      if (t < 1) requestAnimationFrame(thinkTick);
+    }
+    requestAnimationFrame(thinkTick);
+    await new Promise(r => setTimeout(r, thinkDur));
+
+    // score elements one by one with spring pulse
+    for (let i = 0; i < s2Scores.length; i++) {
+      const s = s2Scores[i];
+      s.classList.remove('wait'); s.classList.add('scoring');
+      await new Promise(r => setTimeout(r, 250));
+      s.classList.remove('scoring'); s.classList.add(s2GT[i]);
+      await new Promise(r => setTimeout(r, 80));
+    }
+    s2Run.textContent = '↻ Reset'; s2Run.disabled = false;
+  });
+
+  async function streamS2(el, text, speed) {
+    for (let i = 0; i <= text.length; i++) {
+      el.textContent = text.slice(0, i);
+      s2Body.scrollTop = s2Body.scrollHeight;
+      await new Promise(r => setTimeout(r, speed));
+    }
+  }
+
+  // ===== Section 3 : BDPI dimensions + radar morph =====
+  const dimGeneral = [
+    { code:'EB', kr:'외향성', en:'Extraversion', q:'일상에서 여유가 있을 때, 주로 어떻게 시간을 보내길 원하세요?', t: 35, key:'외향' },
+    { code:'AB', kr:'우호성', en:'Agreeableness', q:'지인이나 친구를 신뢰하기 어려운 경우가 있다면 이유는 주로 무엇인가요?', t: 52, key:'우호' },
+    { code:'CB', kr:'성실성', en:'Conscientiousness', q:'정해진 기간 안에 마쳐야 할 일이 있을 때, 평소에 이를 어떻게 처리하시나요?', t: 55, key:'성실' },
+    { code:'OB', kr:'개방성', en:'Openness', q:'새로운 종류의 경험을 접했을 때 어떻게 느끼고 생각하는 편인가요?', t: 62, key:'개방' },
+    { code:'NB', kr:'정서안정성', en:'Neuroticism', q:'다른 사람이 내가 느끼는 감정을 알아챈다면 어떻게 생각할 것 같나요?', t: 48, key:'정서' },
+  ];
+  const dimMal = [
+    { code:'ED', kr:'대인회피', en:'Detachment', q:'다른 사람과의 만남이 부담스럽게 느껴지는 경우가 있나요?', t: 45, key:'대인' },
+    { code:'AD', kr:'자기중심', en:'Antagonism', q:'자신의 의견과 입장이 다른 사람의 의견보다 우선시되는 편인가요?', t: 38, key:'자기' },
+    { code:'CD', kr:'조절취약', en:'Disinhibition', q:'충동적인 결정을 후회한 적이 있나요?', t: 42, key:'조절' },
+    { code:'OD', kr:'사고특이', en:'Psychoticism', q:'남들이 잘 이해하지 못하는 생각을 자주 하시나요?', t: 50, key:'사고' },
+    { code:'ND', kr:'부정정서', en:'Negative Affectivity', q:'사소한 일에도 쉽게 불안하거나 침울해지는 편인가요?', t: 44, key:'부정' },
+  ];
+  let currentTab = 'general';
+  const dimList = document.getElementById('dim-list');
+
+  function renderDims() {
+    const data = currentTab === 'general' ? dimGeneral : dimMal;
+    const malClass = currentTab === 'general' ? '' : ' mal';
+    dimList.innerHTML = data.map(d => `
+      <div class="dim${malClass}" data-key="${d.key}">
+        <div class="dim-h"><span class="dim-code">${d.code}</span><span class="dim-name">${d.kr}</span><span class="dim-en">${d.en}</span></div>
+        <div class="dim-q">${d.q}</div>
+      </div>`).join('');
+    dimList.querySelectorAll('.dim').forEach((el, i) => {
+      el.addEventListener('mouseenter', () => {
+        dimList.querySelectorAll('.dim').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        highlightRadar(i);
+      });
+    });
+  }
+
+  // Radar SVG
+  const radarSvg = document.getElementById('radar-svg');
+  const radarTitle = document.getElementById('radar-title');
+  const radarTag = document.getElementById('radar-tag');
+  const RADIUS = 110;
+  function drawRadar() {
+    const data = currentTab === 'general' ? dimGeneral : dimMal;
+    const isMal = currentTab === 'mal';
+    const N = data.length;
+    const angle = (i) => -Math.PI / 2 + (i * 2 * Math.PI / N);
+    const point = (i, v) => {
+      const r = (v / 75) * RADIUS;
+      return [Math.cos(angle(i)) * r, Math.sin(angle(i)) * r];
+    };
+    let svg = '';
+    // grid rings
+    [0.33, 0.66, 1].forEach(s => {
+      let pts = data.map((_, i) => point(i, 75 * s)).map(p => p.join(',')).join(' ');
+      svg += `<polygon class="grid-line" points="${pts}" />`;
+    });
+    // axes
+    data.forEach((_, i) => {
+      const [x, y] = point(i, 75);
+      svg += `<line class="axis" x1="0" y1="0" x2="${x}" y2="${y}" />`;
+    });
+    // labels
+    data.forEach((d, i) => {
+      const [x, y] = point(i, 92);
+      svg += `<text class="axis-label" x="${x}" y="${y}" text-anchor="middle" dy="0.35em">${d.kr}</text>`;
+    });
+    // data poly
+    const pts = data.map((d, i) => point(i, d.t).join(',')).join(' ');
+    svg += `<polygon class="data-poly ${isMal ? 'mal' : 'gen'}" points="${pts}" />`;
+    // data points
+    data.forEach((d, i) => {
+      const [x, y] = point(i, d.t);
+      svg += `<circle class="data-point" cx="${x}" cy="${y}" r="3" fill="${isMal ? '#f59e0b' : '#6366f1'}" data-i="${i}" />`;
+    });
+    radarSvg.innerHTML = svg;
+    radarTitle.textContent = isMal ? '▸ BDPI T-SCORE · MALADAPTIVE' : '▸ BDPI T-SCORE · GENERAL';
+  }
+  function highlightRadar(idx) {
+    radarSvg.querySelectorAll('.data-point').forEach((pt, i) => {
+      pt.setAttribute('r', i === idx ? 6 : 3);
+    });
+  }
+  document.querySelectorAll('.bdpi-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.bdpi-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      dimList.classList.add('fading');
+      setTimeout(() => {
+        renderDims(); drawRadar();
+        dimList.classList.remove('fading');
+      }, 250);
+    });
+  });
+  renderDims(); drawRadar();
+
+  // ===== Section 4 : LLM interpretation streaming =====
+  const llmStream = document.getElementById('llm-stream');
+  const llmReplay = document.getElementById('llm-replay');
+  const llmText = '균형유지형은 정서민감성과 정서지능이 모두 중간 수준에 위치한 안정적인 리더 유형입니다. 정서 자극에 과민하게 반응하지 않으면서도, 상황에 따라 유연하게 공감과 단호함을 조절할 수 있습니다. 조직 내 갈등 상황에서 중재자 역할을 자연스럽게 수행하며, 팀의 정서적 균형을 유지하는 안정감 있는 리더십을 보입니다. 다만 강한 결단이 필요한 순간에는 의사 결정 속도를 점검해 볼 필요가 있습니다.';
+  let llmRunning = false;
+  async function streamLLM() {
+    if (llmRunning) return;
+    llmRunning = true;
+    llmStream.classList.remove('done');
+    llmStream.innerHTML = '<span class="streamed"></span><span class="cursor"></span>';
+    const target = llmStream.querySelector('.streamed');
+    for (let i = 0; i <= llmText.length; i++) {
+      target.textContent = llmText.slice(0, i);
+      await new Promise(r => setTimeout(r, 22 + Math.random() * 18));
+    }
+    llmStream.classList.add('done');
+    llmRunning = false;
+  }
+  llmReplay.addEventListener('click', () => { if (!llmRunning) streamLLM(); });
+  new IntersectionObserver((es, ob) => {
+    es.forEach(e => { if (e.isIntersecting) { streamLLM(); ob.unobserve(e.target); } });
+  }, { threshold: 0.4 }).observe(llmStream);
+
+  // ===== Section 5 : Screening (auto-play) =====
+  const flow = [
+    { code:'A1', crit:'A', q:'지난 1달 동안, 하루 중 대부분, 거의 매일 집 혹은 방에서 시간을 보내셨나요?', a:'네, 거의 안 나갔어요', verdict:'met' },
+    { code:'A2', crit:'A', q:'지난 1달 동안, 일주일에 평균적으로 몇 번 외출하셨나요?', a:'주 1번 정도', verdict:'met' },
+    { code:'A3', crit:'A', q:'이러한 기간이 얼마나 오래 지속되었습니까?', a:'한 1년 된 것 같아요', verdict:'met', critDone:'met' },
+    { code:'B1', crit:'B', q:'지난 1달 동안, 유의미한 상호작용을 꾸준히 지속한 사람이 몇 명입니까?', a:'없어요, 아무도', verdict:'met' },
+    { code:'B2', crit:'B', q:'이런 상태가 얼마나 오래 지속되었나요?', a:'한 6개월 정도요', verdict:'met', critDone:'met' },
+    { code:'C1', crit:'C', q:'필요할 때 의지할 수 있는 분이 몇 분이나 계신가요?', a:'한 분 정도', verdict:'unmet', critDone:'unmet' },
+    { code:'D1', crit:'D', q:'고립된 생활로 인해 정서적 고통을 느끼셨나요?', a:'네, 많이요', verdict:'met', critDone:'met' },
+  ];
+  let scIdx = 0, scPlaying = false;
+  const scChat = document.getElementById('scr-chat');
+  const scItems = document.getElementById('sc-items');
+  const scNext = document.getElementById('scr-next');
+  const scPlay = document.getElementById('scr-play');
+  const scReset = document.getElementById('scr-reset');
+
+  function scAddBot(t) { const d = document.createElement('div'); d.className = 'scr-msg bot'; d.textContent = t; scChat.appendChild(d); scChat.scrollTop = scChat.scrollHeight; }
+  function scAddUser(t) { const d = document.createElement('div'); d.className = 'scr-msg user'; d.textContent = t; scChat.appendChild(d); scChat.scrollTop = scChat.scrollHeight; }
+  function scTyping() { const d = document.createElement('div'); d.className = 'scr-typing'; d.innerHTML = '<span></span><span></span><span></span>'; scChat.appendChild(d); scChat.scrollTop = scChat.scrollHeight; return d; }
+  function scAddItem(st) {
+    const d = document.createElement('div'); d.className = 'sc-item';
+    d.innerHTML = `<span class="code">${st.code}</span><span class="q">${st.q}</span>
+      <div class="ans">→ "${st.a}"</div>
+      <span class="verdict ${st.verdict}">${st.verdict === 'met' ? '✓ 충족' : '✗ 미충족'}</span>`;
+    scItems.appendChild(d); scItems.scrollTop = scItems.scrollHeight;
+  }
+  function scUpdateCrit(letter, state) {
+    const el = document.getElementById('crit-' + letter);
+    el.classList.remove('wait','met','unmet'); el.classList.add(state);
+    el.querySelector('.st').textContent = state === 'met' ? '충족' : state === 'unmet' ? '미충족' : '대기';
+  }
+  function scUpdateProgress() {
+    const pct = (scIdx / flow.length) * 100;
+    document.getElementById('sc-progress-bar').style.width = pct + '%';
+    document.getElementById('sc-progress-text').textContent = `${scIdx} / ${flow.length}`;
+  }
+  function scResetAll() {
+    scIdx = 0; scChat.innerHTML = ''; scItems.innerHTML = '';
+    scAddBot('안녕하세요. 사회적 고립 평가 인터뷰를 시작하겠습니다.');
+    ['A','B','C','D'].forEach(l => scUpdateCrit(l, 'wait'));
+    scUpdateProgress();
+    scNext.disabled = false; scPlaying = false; scPlay.classList.remove('playing'); scPlay.textContent = '▶ Play';
+  }
+  async function scAdvance() {
+    if (scIdx >= flow.length) return false;
+    const step = flow[scIdx];
+    const typing = scTyping();
+    await new Promise(r => setTimeout(r, 700));
+    typing.remove();
+    scAddBot(step.q);
+    await new Promise(r => setTimeout(r, 800));
+    scAddUser(step.a);
+    await new Promise(r => setTimeout(r, 400));
+    scAddItem(step);
+    if (step.critDone) scUpdateCrit(step.crit, step.critDone);
+    scIdx++; scUpdateProgress();
+    if (scIdx >= flow.length) {
+      await new Promise(r => setTimeout(r, 500));
+      scAddBot('평가가 모두 완료되었습니다. 진단: 사회적 고립 가능성 높음.');
+      return false;
+    }
+    return true;
+  }
+  scNext.addEventListener('click', async () => {
+    if (scPlaying || scIdx >= flow.length) return;
+    scNext.disabled = true;
+    await scAdvance();
+    scNext.disabled = scIdx >= flow.length;
+  });
+  scPlay.addEventListener('click', async () => {
+    if (scPlaying) { scPlaying = false; scPlay.classList.remove('playing'); scPlay.textContent = '▶ Play'; return; }
+    scPlaying = true; scPlay.classList.add('playing'); scPlay.textContent = '⏸ Pause';
+    while (scPlaying && scIdx < flow.length) {
+      const ok = await scAdvance();
+      if (!ok) break;
+      await new Promise(r => setTimeout(r, 600));
+    }
+    scPlaying = false; scPlay.classList.remove('playing'); scPlay.textContent = scIdx >= flow.length ? '✓ Done' : '▶ Play';
+  });
+  scReset.addEventListener('click', scResetAll);
+
+  // ===== Section 6 : Pipeline + particle flow =====
+  const pfDetail = document.getElementById('pf-detail');
+  const pfData = {
+    data: ['DATA COLLECTION', 'AI Hub 데이터셋의 자전적 기억 면담 (N=532, 60대 이상). 텍스트·음성·구조화 메타데이터 수집.'],
+    feat: ['FEATURE EXTRACTION', 'AM 내용(14) · 텍스트 담화(2: engagement, speech rate) · 음향(72: MFCC·Formant·Jitter·Pitch). 총 88개 특징.'],
+    sel:  ['FEATURE SELECTION', '특징 중요도 기반 top-K 선택. K=40에서 최고 성능. 상위 3개만으로도 F1 0.629 달성.'],
+    model:['MACHINE LEARNING', 'SVM · Random Forest · XGBoost 비교. 5-fold StratifiedGroupKFold CV. XGBoost top-20: F1 0.643 / AUC 0.684 / Acc 65.7%.'],
+    shap: ['INTERPRETABILITY', 'SHAP 값 분석으로 각 특징의 우울 분류 기여도 가시화. 임상 해석 가능한 결과 제공.']
+  };
+  document.querySelectorAll('.pf-step').forEach(step => {
+    const set = () => {
+      document.querySelectorAll('.pf-step').forEach(x => x.classList.remove('active'));
+      step.classList.add('active');
+      const d = pfData[step.dataset.step];
+      pfDetail.style.opacity = 0;
+      setTimeout(() => { pfDetail.innerHTML = `<span class="ttl">▸ ${d[0]}</span>${d[1]}`; pfDetail.style.opacity = 1; }, 150);
+    };
+    step.addEventListener('mouseenter', set);
+    step.addEventListener('click', set);
+  });
+
+  // Particle flow along pipeline
+  (function pipeParticles() {
+    const canvas = document.getElementById('pipe-canvas');
+    const ctx = canvas.getContext('2d');
+    const pipeline = document.getElementById('ml-pipeline');
+    function resize() {
+      const r = pipeline.getBoundingClientRect();
+      canvas.width = r.width; canvas.height = r.height;
+    }
+    resize(); addEventListener('resize', resize);
+    const particles = [];
+    function spawn() {
+      const steps = pipeline.querySelectorAll('.pf-step');
+      if (steps.length < 2) return;
+      const pr = pipeline.getBoundingClientRect();
+      particles.push({
+        progress: 0, speed: 0.003 + Math.random() * 0.003,
+        hue: 180 + Math.random() * 80,
+        size: 1.5 + Math.random() * 1.5,
+        steps: Array.from(steps).map(s => {
+          const r = s.getBoundingClientRect();
+          return { x: r.left - pr.left + r.width / 2, y: r.top - pr.top + r.height / 2 };
+        })
+      });
+    }
+    let lastSpawn = 0;
+    function tick(now) {
+      const rect = pipeline.getBoundingClientRect();
+      // Only animate if section visible
+      if (rect.top < innerHeight && rect.bottom > 0) {
+        if (now - lastSpawn > 280) { spawn(); lastSpawn = now; }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.progress += p.speed;
+          if (p.progress >= 1) { particles.splice(i, 1); continue; }
+          const total = p.steps.length - 1;
+          const seg = Math.floor(p.progress * total);
+          const local = (p.progress * total) - seg;
+          const a = p.steps[seg], b = p.steps[Math.min(seg + 1, p.steps.length - 1)];
+          const x = a.x + (b.x - a.x) * local;
+          const y = a.y + (b.y - a.y) * local;
+          // trail
+          for (let t = 0; t < 5; t++) {
+            const tp = Math.max(0, p.progress - t * 0.005);
+            const ts = Math.floor(tp * total);
+            const tl = (tp * total) - ts;
+            const ta = p.steps[ts], tb = p.steps[Math.min(ts + 1, p.steps.length - 1)];
+            const tx = ta.x + (tb.x - ta.x) * tl;
+            const ty = ta.y + (tb.y - ta.y) * tl;
+            ctx.beginPath();
+            ctx.arc(tx, ty, p.size * (1 - t * 0.18), 0, Math.PI * 2);
+            ctx.fillStyle = `hsla(${p.hue}, 90%, 60%, ${0.5 * (1 - t / 5)})`;
+            ctx.fill();
+          }
+        }
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    setTimeout(resize, 100);
+    setTimeout(resize, 500);
+  })();
+</script>
+
+</body>
+</html>
