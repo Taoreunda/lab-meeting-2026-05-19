@@ -6,6 +6,7 @@
 <title>Lab Meeting · 2026.05.19</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/devices.css@0.1.15/dist/devices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <style>
   :root {
@@ -187,7 +188,8 @@
     font-family: var(--display);
     font-size: 17px;
     color: var(--text-mid);
-    margin: 0;
+    margin: 0 auto;
+    max-width: 640px;
     font-weight: 400;
     letter-spacing: -0.374px;
     line-height: 1.47;
@@ -210,13 +212,8 @@
   section#s3 .section-body { grid-template-columns: minmax(0, 0.35fr) minmax(0, 1.65fr) !important; }
   section#s5 .section-body { grid-template-columns: minmax(0, 0.35fr) minmax(0, 1.65fr) !important; }
   section#s6 .section-body { grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.7fr) !important; }
-  /* S3 & S5 need a bigger device — tighter section padding + 4:3 aspect */
+  /* S3 & S5 need tighter section padding so the MacBook fits */
   section#s3, section#s5 { padding: 56px 40px 44px; }
-  section#s3 .device-frame.desktop-shape,
-  section#s5 .device-frame.desktop-shape {
-    aspect-ratio: 4 / 3;
-    max-height: min(70vh, 720px);
-  }
 
   .section-stage {
     display: flex; align-items: center; justify-content: center;
@@ -226,29 +223,29 @@
   /* Section meta — cards stacked vertically */
   .section-meta {
     display: flex; flex-direction: column;
-    gap: 18px;
-    align-self: stretch; justify-content: center;
+    gap: 14px;
+    align-self: center; justify-content: flex-start;
     text-align: left;
     min-height: 0;
   }
   .meta-item {
     flex: 0 0 auto;
     border-top: 1px solid var(--hairline);
-    padding: 18px 0 0;
+    padding: 14px 0 0;
   }
   .meta-h {
     font-family: var(--display);
-    font-size: 21px;
+    font-size: 19px;
     font-weight: 600;
     letter-spacing: 0.231px;
     color: inherit;
-    margin: 0 0 6px;
+    margin: 0 0 5px;
     line-height: 1.19;
   }
   .meta-d {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--text-mid);
-    line-height: 1.47;
+    line-height: 1.45;
     letter-spacing: -0.224px;
   }
   .meta-d code, .meta-d .mono {
@@ -258,17 +255,41 @@
     color: var(--text);
   }
 
-  /* === Device frame === */
-  .device-frame {
-    background: #fff;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: var(--shadow-product);
-    transition: transform 0.8s var(--ease);
+  /* === Device frame (legacy — only a4-shape & pipeline-shape still use .mock-frame) === */
+
+  /* === Scale wrappers for devices.css mockups === */
+  /* iPhone X library outer is ~375×812; MacBook is ~720×432.
+     We scale each to roughly fit its section column while keeping crisp pixels.
+     transform-origin top so the device hugs the column top, leaving meta room. */
+  .device.scale-iphone {
+    --dev-scale: 0.72;
+    transform: translateY(var(--device-py, 0px)) scale(var(--dev-scale));
+    transform-origin: center center;
     margin: 0 auto;
-    width: 100%;
-    max-width: 720px;
-    max-height: min(72vh, 720px);
+  }
+  .device.scale-macbook {
+    --dev-scale: 1.25;
+    transform: translateY(var(--device-py, 0px)) scale(var(--dev-scale));
+    transform-origin: center center;
+    margin: 0 auto;
+  }
+  /* Shrink on small viewports so devices still fit one screen */
+  @media (max-height: 820px) {
+    .device.scale-iphone { --dev-scale: 0.64; }
+    .device.scale-macbook { --dev-scale: 1.05; }
+  }
+  @media (max-height: 720px) {
+    .device.scale-iphone { --dev-scale: 0.56; }
+    .device.scale-macbook { --dev-scale: 0.9; }
+  }
+  /* Devices.css's .device-frame for our content: ensure inner content fills */
+  .device.device-iphone-x .device-frame {
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .device.device-macbook .device-frame {
+    display: flex; flex-direction: column;
+    overflow: hidden;
   }
 
   /* === iMessage-style bubble chat for S1 === */
@@ -384,35 +405,23 @@
   }
   .chat-input .send:hover { background: var(--accent-hover); transform: scale(1.06); }
 
-  /* Chat-window proportions for Dabom TUI windows */
-  .device-frame.chat-shape {
-    height: 100%;
-    max-height: min(80vh, 800px);
-    aspect-ratio: 9 / 18;
-    width: auto;
-    display: flex; flex-direction: column;
-    border-radius: 36px;
-    box-shadow: var(--shadow-product);
-    border: 0;
-  }
-  /* S2 needs a wider chat shape so 8 score chips fit on a single line */
-  section#s2 .device-frame.chat-shape { aspect-ratio: 11 / 18; }
-  .device-frame.chat-shape .mem-graph { flex: 0 0 auto; height: 220px; margin: 12px 14px 6px; }
-  .device-frame.chat-shape .chat-body { padding: 10px 14px 6px; gap: 5px; }
-  .device-frame.chat-shape .bubble { font-size: 13px; padding: 7px 12px; max-width: 86%; }
-  .device-frame.chat-shape .mem-legend { padding: 2px 12px 8px; font-size: 10px; gap: 10px; }
-  .device-frame.chat-shape .score-bar.amt {
-    display: flex; flex-wrap: nowrap; gap: 0 8px;
-    padding: 10px 12px 12px; margin: 4px 0 0;
+  /* iPhone X inner-content tuning (was .mock-frame.chat-shape) */
+  .device-iphone-x .device-frame .mem-graph { flex: 0 0 auto; height: 200px; margin: 12px 14px 6px; }
+  .device-iphone-x .device-frame .chat-body { padding: 10px 14px 6px; gap: 5px; }
+  .device-iphone-x .device-frame .bubble { font-size: 13px; padding: 7px 12px; max-width: 86%; }
+  .device-iphone-x .device-frame .mem-legend { padding: 2px 12px 8px; font-size: 10px; gap: 10px; }
+  .device-iphone-x .device-frame .score-bar.amt {
+    display: flex; flex-wrap: nowrap; gap: 0 4px;
+    padding: 8px 6px 10px; margin: 2px 0 0;
     border-top: 1px solid var(--border-soft);
     background: transparent;
     flex: 0 0 auto;
     justify-content: center; align-items: center;
-    font-size: 10.5px;
+    font-size: 9.5px;
     white-space: nowrap; overflow: hidden;
   }
-  .score-bar.amt .s { display: inline-flex; align-items: center; gap: 4px; transition: all 0.4s var(--ease); font-size: 10.5px; }
-  .score-bar.amt .s::before { content: '○'; font-size: 9px; margin-right: 1px; color: currentColor; }
+  .score-bar.amt .s { display: inline-flex; align-items: center; gap: 2px; transition: all 0.4s var(--ease); font-size: 9.5px; }
+  .score-bar.amt .s::before { content: '○'; font-size: 8px; margin-right: 1px; color: currentColor; }
   .score-bar.amt .s.done::before { content: '●'; }
   .score-bar.amt .s.wait { opacity: 0.35; color: var(--text-quiet); }
   .score-bar.amt .s.scoring { animation: scorePulse 0.7s var(--ease); }
@@ -426,39 +435,28 @@
   .score-bar.amt .s[data-c="ppl"].done { color: #af52de; }
   .score-bar.amt .s[data-c="sense"].done { color: #ff9500; }
 
-  /* Desktop computer screen aspect (16:10) */
-  .device-frame.desktop-shape {
-    width: 100%;
-    max-width: none;
-    aspect-ratio: 16 / 10;
-    max-height: min(80vh, 800px);
-    display: flex; flex-direction: column;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: var(--shadow-product);
-    border: 0;
-  }
+  /* MacBook inner-content tuning (was .mock-frame.desktop-shape) */
   .open-ext {
     color: var(--text-mid); text-decoration: none;
     font-size: 14px; padding: 2px 8px;
     border-radius: 6px; transition: all 0.2s var(--ease);
   }
   .open-ext:hover { background: rgba(0,0,0,0.06); color: var(--accent); }
-  /* Clickable overlay on iframe so users can click to open in new tab */
   .s3-device, .s5-device { position: relative; }
-  .device-frame.desktop-shape .device-titlebar { flex: 0 0 auto; }
-  .device-frame.desktop-shape iframe { flex: 1 1 0; min-height: 0; }
-  .device-frame.desktop-shape .scr-frame {
+  .device-macbook .device-frame { background: #fff; }
+  .device-macbook .device-frame .device-titlebar { flex: 0 0 auto; }
+  .device-macbook .device-frame iframe { flex: 1 1 0; min-height: 0; width: 100%; border: 0; }
+  .device-macbook .device-frame .scr-frame {
     flex: 1 1 0; min-height: 0;
     display: flex; flex-direction: column;
     overflow: hidden;
   }
-  .device-frame.desktop-shape .scr-head { flex: 0 0 auto; }
-  .device-frame.desktop-shape .scr-body { flex: 1 1 0; min-height: 0; }
-  .device-frame.desktop-shape .scr-controls { flex: 0 0 auto; }
+  .device-macbook .device-frame .scr-head { flex: 0 0 auto; }
+  .device-macbook .device-frame .scr-body { flex: 1 1 0; min-height: 0; }
+  .device-macbook .device-frame .scr-controls { flex: 0 0 auto; }
 
   /* ML Pipeline diagram (landscape image) */
-  .device-frame.pipeline-shape {
+  .mock-frame.pipeline-shape {
     width: 100%;
     max-width: none;
     aspect-ratio: 1376 / 768;
@@ -469,14 +467,14 @@
     display: block;
     overflow: visible;
   }
-  .device-frame.pipeline-shape .pipeline-image {
+  .mock-frame.pipeline-shape .pipeline-image {
     width: 100%; height: 100%;
     object-fit: contain;
     display: block;
   }
 
   /* A4 portrait for BDPI report image */
-  .device-frame.a4-shape {
+  .mock-frame.a4-shape {
     height: 100%;
     max-height: min(78vh, 760px);
     aspect-ratio: 210 / 297;
@@ -488,7 +486,7 @@
     overflow: hidden;
     background: #fff;
   }
-  .device-frame.a4-shape .a4-image {
+  .mock-frame.a4-shape .a4-image {
     width: 100%; height: 100%;
     object-fit: cover; object-position: top center;
     display: block;
@@ -537,7 +535,7 @@
   .scr-head .badges { display: flex; gap: 8px; }
   .scr-head .ub { padding: 5px 12px; border: 1px solid var(--s-border); border-radius: 980px; font-size: 11px; color: var(--s-mid); cursor: pointer; }
   .scr-head .ub.active { color: var(--s-primary); border-color: var(--s-primary); background: rgba(0,122,255,0.05); }
-  .scr-body { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; padding: 16px; min-height: 380px; }
+  .scr-body { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; padding: 12px 16px; min-height: 0; }
   .scr-chat { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 380px; font-size: 13px; }
   .scr-msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; line-height: 1.45; animation: msgIn 0.55s var(--ease); }
   @keyframes msgIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -548,13 +546,13 @@
   .scr-typing span:nth-child(2) { animation-delay: 0.2s; }
   .scr-typing span:nth-child(3) { animation-delay: 0.4s; }
   .scr-scorecard { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 14px; padding: 16px; overflow-y: auto; max-height: 380px; font-size: 13px; }
-  .sc-progress { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 14px; }
+  .sc-progress { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 10px; }
   .sc-progress .label { color: var(--s-text); font-weight: 600; }
   .sc-progress .bar { flex: 1; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
   .sc-progress .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--s-primary), var(--s-success)); transition: width 0.7s var(--ease); }
   .sc-progress .pct { color: var(--s-mid); font-family: var(--mono); font-size: 11px; }
-  .sc-criteria { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .sc-crit { border: 1px solid var(--s-border); border-radius: 12px; padding: 10px 14px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: all 0.5s var(--ease); }
+  .sc-criteria { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .sc-crit { border: 1px solid var(--s-border); border-radius: 10px; padding: 8px 11px; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: all 0.5s var(--ease); }
   .sc-crit .nm { font-weight: 600; }
   .sc-crit .st { font-size: 10.5px; padding: 2px 10px; border-radius: 980px; font-weight: 600; }
   .sc-crit.wait .st { background: rgba(0,0,0,0.06); color: var(--s-mid); }
@@ -599,6 +597,7 @@
   .reveal-meta.in-view > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
   .reveal-meta.in-view > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 0.22s; }
   .reveal-meta.in-view > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 0.34s; }
+  .reveal-meta.in-view > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 0.46s; }
 
   footer.foot { padding: 64px 32px; text-align: center; border-top: 1px solid var(--border); color: var(--text-quiet); font-size: 12.5px; font-weight: 500; background: var(--bg); }
 
@@ -658,28 +657,36 @@
 
     <div class="section-body">
       <div class="section-stage reveal-stage">
-      <div class="device-frame chat-shape">
-        <div class="chat-head">
-          <div class="chat-wordmark">DABOM</div>
-        </div>
-        <div class="chat-content">
-          <div class="mem-graph">
-            <svg id="mem-svg"></svg>
+      <div class="device device-iphone-x scale-iphone">
+        <div class="device-frame">
+          <div class="chat-head">
+            <div class="chat-wordmark">DABOM</div>
           </div>
-          <div class="mem-legend">
-            <span><i style="background:#ff9500"></i>단서</span>
-            <span><i style="background:#007aff"></i>시간</span>
-            <span><i style="background:#00c7be"></i>공간</span>
-            <span><i style="background:#34c759"></i>사건</span>
-            <span><i style="background:#af52de"></i>인물</span>
+          <div class="chat-content">
+            <div class="mem-graph">
+              <svg id="mem-svg"></svg>
+            </div>
+            <div class="mem-legend">
+              <span><i style="background:#ff9500"></i>단서</span>
+              <span><i style="background:#007aff"></i>시간</span>
+              <span><i style="background:#00c7be"></i>공간</span>
+              <span><i style="background:#34c759"></i>사건</span>
+              <span><i style="background:#af52de"></i>인물</span>
+            </div>
+            <div class="chat-body" id="s1-body"></div>
+            <button class="chat-play restart" id="s1-play">↻ 다시 보기</button>
           </div>
-          <div class="chat-body" id="s1-body"></div>
-          <button class="chat-play restart" id="s1-play">↻ 다시 보기</button>
+          <div class="chat-input">
+            <input id="s1-input" placeholder="메시지 입력" autocomplete="off" />
+            <button class="send" id="s1-send" aria-label="send">↑</button>
+          </div>
         </div>
-        <div class="chat-input">
-          <input id="s1-input" placeholder="메시지 입력" autocomplete="off" />
-          <button class="send" id="s1-send" aria-label="send">↑</button>
-        </div>
+        <div class="device-stripe"></div>
+        <div class="device-header"></div>
+        <div class="device-sensors"></div>
+        <div class="device-btns"></div>
+        <div class="device-power"></div>
+        <div class="device-home"></div>
       </div>
     </div>
 
@@ -716,30 +723,38 @@
 
     <div class="section-body">
       <div class="section-stage reveal-stage">
-      <div class="device-frame chat-shape">
-        <div class="chat-head">
-          <div class="chat-wordmark">DABOM <span style="color:var(--text-quiet);font-weight:400;letter-spacing:0.15em;font-size:12px;margin-left:6px">TRAINING · cue "커피"</span></div>
-        </div>
-        <div class="chat-content">
-          <div class="chat-body" id="s2-body">
-            <div class="bubble assistant done">'커피'와 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>
+      <div class="device device-iphone-x scale-iphone">
+        <div class="device-frame">
+          <div class="chat-head">
+            <div class="chat-wordmark">DABOM <span style="color:var(--text-quiet);font-weight:400;letter-spacing:0.15em;font-size:12px;margin-left:6px">TRAINING · cue "커피"</span></div>
           </div>
-          <div class="score-bar amt" id="s2-scores">
-            <span class="s wait" data-c="subj">주관경험</span>
-            <span class="s wait" data-c="time">시간</span>
-            <span class="s wait" data-c="place">공간</span>
-            <span class="s wait" data-c="event">사건</span>
-            <span class="s wait" data-c="emo">감정</span>
-            <span class="s wait" data-c="think">생각</span>
-            <span class="s wait" data-c="ppl">인물</span>
-            <span class="s wait" data-c="sense">감각</span>
+          <div class="chat-content">
+            <div class="chat-body" id="s2-body">
+              <div class="bubble assistant done">'커피'와 관련된 기억 중, 한 번 있었던 구체적인 순간을 떠올려주세요.</div>
+            </div>
+            <div class="score-bar amt" id="s2-scores">
+              <span class="s wait" data-c="subj">주관경험</span>
+              <span class="s wait" data-c="time">시간</span>
+              <span class="s wait" data-c="place">공간</span>
+              <span class="s wait" data-c="event">사건</span>
+              <span class="s wait" data-c="emo">감정</span>
+              <span class="s wait" data-c="think">생각</span>
+              <span class="s wait" data-c="ppl">인물</span>
+              <span class="s wait" data-c="sense">감각</span>
+            </div>
+            <button class="chat-play restart" id="s2-run">↻ 다시 보기</button>
           </div>
-          <button class="chat-play restart" id="s2-run">↻ 다시 보기</button>
+          <div class="chat-input">
+            <input id="s2-input" placeholder="기억을 입력하세요" autocomplete="off" disabled />
+            <button class="send" aria-label="send" disabled>↑</button>
+          </div>
         </div>
-        <div class="chat-input">
-          <input id="s2-input" placeholder="기억을 입력하세요" autocomplete="off" disabled />
-          <button class="send" aria-label="send" disabled>↑</button>
-        </div>
+        <div class="device-stripe"></div>
+        <div class="device-header"></div>
+        <div class="device-sensors"></div>
+        <div class="device-btns"></div>
+        <div class="device-power"></div>
+        <div class="device-home"></div>
       </div>
     </div>
 
@@ -772,17 +787,23 @@
 
     <div class="section-body">
       <div class="section-stage reveal-stage">
-      <div class="device-frame desktop-shape s3-device">
-        <div class="device-titlebar">
-          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
-          <div class="tl-title">taoreunda.github.io · <span class="tl-tag">bdpi-presentation</span></div>
-          <a href="https://taoreunda.github.io/bdpi-presentation/" target="_blank" rel="noopener" class="open-ext" title="새 창에서 열기">↗</a>
+      <div class="device device-macbook device-spacegray scale-macbook s3-device">
+        <div class="device-frame">
+          <div class="device-titlebar">
+            <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+            <div class="tl-title">taoreunda.github.io · <span class="tl-tag">bdpi-presentation</span></div>
+            <a href="https://taoreunda.github.io/bdpi-presentation/" target="_blank" rel="noopener" class="open-ext" title="새 창에서 열기">↗</a>
+          </div>
+          <iframe
+            src="https://taoreunda.github.io/bdpi-presentation/"
+            title="BDPI Presentation"
+            referrerpolicy="no-referrer"></iframe>
         </div>
-        <iframe
-          src="https://taoreunda.github.io/bdpi-presentation/"
-          title="BDPI Presentation"
-          referrerpolicy="no-referrer"
-          style="display:block;width:100%;height:100%;border:0;background:#fff"></iframe>
+        <div class="device-stripe"></div>
+        <div class="device-header"></div>
+        <div class="device-sensors"></div>
+        <div class="device-btns"></div>
+        <div class="device-power"></div>
       </div>
     </div>
 
@@ -815,7 +836,7 @@
 
     <div class="section-body">
       <div class="section-stage reveal-stage">
-      <div class="device-frame a4-shape">
+      <div class="mock-frame a4-shape">
         <img src="bdpi_a4_sample.png" alt="BDPI 보고서 샘플" class="a4-image" />
       </div>
     </div>
@@ -849,41 +870,48 @@
 
     <div class="section-body">
       <div class="section-stage reveal-stage">
-      <div class="device-frame desktop-shape s5-device">
-        <div class="device-titlebar">
-          <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
-          <div class="tl-title">Dabom · <span class="tl-tag">localhost:8501/chat</span></div>
-        </div>
-        <div class="scr-frame">
-          <div class="scr-head">
-            <div class="logo">Dabom <span class="sub">SOCIAL ISOLATION ASSESSMENT</span></div>
-            <div class="badges"><span class="ub">사용자 (인터뷰)</span><span class="ub active">검사자 (검토)</span></div>
+      <div class="device device-macbook device-spacegray scale-macbook s5-device">
+        <div class="device-frame">
+          <div class="device-titlebar">
+            <div class="tl-dots"><span class="tl-dot r"></span><span class="tl-dot y"></span><span class="tl-dot g"></span></div>
+            <div class="tl-title">Dabom · <span class="tl-tag">localhost:8501/chat</span></div>
           </div>
-          <div class="scr-body">
-            <div class="scr-chat" id="scr-chat">
-              <div class="scr-msg bot">안녕하세요. 사회적 고립 평가 인터뷰를 시작하겠습니다.</div>
+          <div class="scr-frame">
+            <div class="scr-head">
+              <div class="logo">Dabom <span class="sub">SOCIAL ISOLATION ASSESSMENT</span></div>
+              <div class="badges"><span class="ub">사용자 (인터뷰)</span><span class="ub active">검사자 (검토)</span></div>
             </div>
-            <div class="scr-scorecard">
-              <div class="sc-progress">
-                <span class="label">진행률</span>
-                <div class="bar"><i id="sc-progress-bar" style="width:0%"></i></div>
-                <span class="pct" id="sc-progress-text">0 / 7</span>
+            <div class="scr-body">
+              <div class="scr-chat" id="scr-chat">
+                <div class="scr-msg bot">안녕하세요. 사회적 고립 평가 인터뷰를 시작하겠습니다.</div>
               </div>
-              <div class="sc-criteria">
-                <div class="sc-crit wait" id="crit-A"><span class="nm">A 물리적 고립</span><span class="st">대기</span></div>
-                <div class="sc-crit wait" id="crit-B"><span class="nm">B 객관적 고립</span><span class="st">대기</span></div>
-                <div class="sc-crit wait" id="crit-C"><span class="nm">C 주관적 고립</span><span class="st">대기</span></div>
-                <div class="sc-crit wait" id="crit-D"><span class="nm">D 정서 · 기능 손상</span><span class="st">대기</span></div>
+              <div class="scr-scorecard">
+                <div class="sc-progress">
+                  <span class="label">진행률</span>
+                  <div class="bar"><i id="sc-progress-bar" style="width:0%"></i></div>
+                  <span class="pct" id="sc-progress-text">0 / 7</span>
+                </div>
+                <div class="sc-criteria">
+                  <div class="sc-crit wait" id="crit-A"><span class="nm">A 물리적 고립</span><span class="st">대기</span></div>
+                  <div class="sc-crit wait" id="crit-B"><span class="nm">B 객관적 고립</span><span class="st">대기</span></div>
+                  <div class="sc-crit wait" id="crit-C"><span class="nm">C 주관적 고립</span><span class="st">대기</span></div>
+                  <div class="sc-crit wait" id="crit-D"><span class="nm">D 정서 · 기능 손상</span><span class="st">대기</span></div>
+                </div>
+                <div class="sc-items" id="sc-items"></div>
               </div>
-              <div class="sc-items" id="sc-items"></div>
+            </div>
+            <div class="scr-controls">
+              <button id="scr-reset" class="restart-link">↻ 다시 보기</button>
+              <button class="primary hidden" id="scr-play" aria-hidden="true">▶ Play</button>
+              <button id="scr-next" class="hidden" aria-hidden="true">다음 →</button>
             </div>
           </div>
-          <div class="scr-controls">
-            <button id="scr-reset" class="restart-link">↻ 다시 보기</button>
-            <button class="primary hidden" id="scr-play" aria-hidden="true">▶ Play</button>
-            <button id="scr-next" class="hidden" aria-hidden="true">다음 →</button>
-          </div>
         </div>
+        <div class="device-stripe"></div>
+        <div class="device-header"></div>
+        <div class="device-sensors"></div>
+        <div class="device-btns"></div>
+        <div class="device-power"></div>
       </div>
     </div>
 
@@ -916,7 +944,7 @@
 
     <div class="section-body">
       <div class="section-stage reveal-stage">
-      <div class="device-frame pipeline-shape">
+      <div class="mock-frame pipeline-shape">
         <img src="ml_pipeline_diagram.png" alt="Depression Detection ML Pipeline" class="pipeline-image" />
       </div>
     </div>
@@ -1014,7 +1042,7 @@
       const offset = (centerY - innerHeight / 2) * 0.04;
       stage.style.setProperty('--py', offset + 'px');
       const inner = stage.firstElementChild;
-      if (inner) inner.style.transform = `translateY(${-offset}px)`;
+      if (inner) inner.style.setProperty('--device-py', `${-offset}px`);
     });
     ticking = false;
   }
