@@ -532,11 +532,14 @@
   .device-macbook .device-frame .iframe-zoom-wrap iframe {
     position: absolute;
     top: 0; left: 0;
-    width: 117.65%;       /* 1 / 0.85 */
+    /* width 30px wider than 1/0.85 so the iframe's own scrollbar lives
+       in the extra strip, then gets clipped by the wrap's overflow:hidden */
+    width: calc(117.65% + 30px);
     height: 117.65%;
     border: 0;
     transform: scale(0.85);
     transform-origin: top left;
+    color-scheme: dark;
   }
   .device-macbook .device-frame iframe:not(.iframe-zoom-wrap iframe) {
     flex: 1 1 0; min-height: 0; width: 100%; border: 0;
@@ -554,9 +557,9 @@
   .device-macbook .device-frame .scr-zoom-wrap > .scr-frame {
     position: absolute;
     top: 0; left: 0;
-    width: 142.86%;       /* 1 / 0.7 */
-    height: 142.86%;
-    transform: scale(0.7);
+    width: 117.65%;       /* 1 / 0.85 — match S3 iframe density */
+    height: 117.65%;
+    transform: scale(0.85);
     transform-origin: top left;
     display: flex; flex-direction: column;
     overflow: hidden;
