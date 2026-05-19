@@ -262,25 +262,32 @@
      We scale each to roughly fit its section column while keeping crisp pixels.
      transform-origin top so the device hugs the column top, leaving meta room. */
   .device.scale-iphone {
-    --dev-scale: 0.72;
+    --dev-scale: 0.84;
     transform: translateY(var(--device-py, 0px)) scale(var(--dev-scale));
     transform-origin: center center;
     margin: 0 auto;
+    /* Apple-style product shadow — two-layer for depth + crispness */
+    filter:
+      drop-shadow(0 22px 44px rgba(0, 0, 0, 0.22))
+      drop-shadow(0 4px 10px rgba(0, 0, 0, 0.10));
   }
   .device.scale-macbook {
-    --dev-scale: 1.25;
+    --dev-scale: 1.38;
     transform: translateY(var(--device-py, 0px)) scale(var(--dev-scale));
     transform-origin: center center;
     margin: 0 auto;
+    filter:
+      drop-shadow(0 28px 48px rgba(0, 0, 0, 0.22))
+      drop-shadow(0 6px 14px rgba(0, 0, 0, 0.10));
   }
   /* Shrink on small viewports so devices still fit one screen */
   @media (max-height: 820px) {
-    .device.scale-iphone { --dev-scale: 0.64; }
-    .device.scale-macbook { --dev-scale: 1.05; }
+    .device.scale-iphone { --dev-scale: 0.76; }
+    .device.scale-macbook { --dev-scale: 1.18; }
   }
   @media (max-height: 720px) {
-    .device.scale-iphone { --dev-scale: 0.56; }
-    .device.scale-macbook { --dev-scale: 0.9; }
+    .device.scale-iphone { --dev-scale: 0.66; }
+    .device.scale-macbook { --dev-scale: 1.0; }
   }
   /* Devices.css's .device-frame for our content: ensure inner content fills */
   .device.device-iphone-x .device-frame {
@@ -290,6 +297,22 @@
   .device.device-macbook .device-frame {
     display: flex; flex-direction: column;
     overflow: hidden;
+  }
+  /* Round inner-screen corners so content matches iPhone X's 32px screen radius.
+     chat-head rounds top, chat-input rounds bottom; the middle chat-content has
+     straight sides that line up with the bezel's straight middle section. */
+  .device-iphone-x .device-frame .chat-head {
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+  }
+  .device-iphone-x .device-frame .chat-input {
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+  }
+  /* MacBook screen: subtle 3px rounding to match the inner display bezel */
+  .device-macbook .device-frame iframe,
+  .device-macbook .device-frame .scr-frame {
+    border-radius: 3px;
   }
 
   /* === iMessage-style bubble chat for S1 === */
