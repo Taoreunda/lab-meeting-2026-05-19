@@ -37,8 +37,8 @@
     --shadow-xl: 0 60px 120px -20px rgba(0,0,0,0.15);
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-io: cubic-bezier(0.4, 0, 0.2, 1);
-    --display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
-    --body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    --display: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+    --body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     --mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, monospace;
     --korean: "Pretendard Variable", Pretendard, var(--body);
   }
@@ -81,16 +81,16 @@
     font-family: var(--display);
     font-size: 22px;
     color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
     margin: 0 0 28px;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
   .hero-title {
     font-family: var(--display);
     font-size: clamp(56px, 8.4vw, 124px);
-    font-weight: 700;
+    font-weight: 900;
     line-height: 1.02;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.055em;
     margin: 0 0 36px;
     color: var(--text);
     white-space: nowrap;
@@ -117,8 +117,8 @@
     font-size: clamp(22px, 2.5vw, 30px);
     color: var(--text-mid);
     max-width: 880px; margin: 0 auto;
-    line-height: 1.25; font-weight: 400;
-    letter-spacing: -0.01em;
+    line-height: 1.25; font-weight: 500;
+    letter-spacing: -0.025em;
   }
   .hero-meta {
     margin-top: 64px; font-size: 13px;
@@ -167,18 +167,18 @@
     font-family: var(--display);
     font-size: 14px;
     color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
     margin: 0 0 14px;
-    letter-spacing: -0.224px;
+    letter-spacing: -0.01em;
   }
 
-  /* display-lg per design.md */
+  /* display-lg — bolder for impact */
   h1.title {
     font-family: var(--display);
-    font-size: clamp(34px, 3.6vw, 44px);
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.374px;
+    font-size: clamp(36px, 3.8vw, 48px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
     margin: 0 0 12px;
     color: inherit;
   }
@@ -190,8 +190,8 @@
     color: var(--text-mid);
     margin: 0 auto;
     max-width: 640px;
-    font-weight: 400;
-    letter-spacing: -0.374px;
+    font-weight: 500;
+    letter-spacing: -0.024em;
     line-height: 1.47;
   }
 
@@ -217,17 +217,15 @@
 
   .section-stage {
     display: flex; align-items: center; justify-content: center;
+    position: relative;
     min-height: 0; height: 100%;
   }
-  /* Restart button anchored at the bottom of the section, centered.
-     Lives at the section level (not stage) so it sits below the device's
-     visual bounding box, never overlapping the screen content. */
+  /* Restart button centered horizontally on the device column.
+     position:absolute inside .section-stage so left:50% aligns with the
+     device's horizontal center, not the page center. */
   .device-restart {
     position: absolute;
-    /* Section has scroll-margin-top: 48px, so when snapped it extends 48px
-       below the viewport bottom. Add 48 here so the button still appears
-       within the visible viewport area. */
-    bottom: 62px; left: 50%;
+    bottom: -8px; left: 50%;
     transform: translateX(-50%);
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(255, 255, 255, 0.86);
@@ -266,17 +264,18 @@
   .meta-h {
     font-family: var(--display);
     font-size: 19px;
-    font-weight: 600;
-    letter-spacing: 0.231px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
     color: inherit;
     margin: 0 0 5px;
-    line-height: 1.19;
+    line-height: 1.22;
   }
   .meta-d {
     font-size: 14px;
     color: var(--text-mid);
     line-height: 1.45;
-    letter-spacing: -0.224px;
+    letter-spacing: -0.012em;
+    font-weight: 500;
   }
   .meta-d code, .meta-d .mono {
     font-family: var(--mono); font-size: 13.5px;
@@ -803,6 +802,7 @@
         <div class="device-power"></div>
         <div class="device-home"></div>
       </div>
+      <button class="device-restart" id="s1-play">↻ 다시 보기</button>
     </div>
 
     <div class="section-meta reveal-meta">
@@ -825,7 +825,6 @@
       </div>
     </div>
   </div>
-  <button class="device-restart" id="s1-play">↻ 다시 보기</button>
 </section>
 
 <!-- ============ S2 : AMT ============ -->
@@ -871,6 +870,7 @@
         <div class="device-power"></div>
         <div class="device-home"></div>
       </div>
+      <button class="device-restart" id="s2-run">↻ 다시 보기</button>
     </div>
 
     <div class="section-meta reveal-meta">
@@ -889,7 +889,6 @@
       </div>
     </div>
   </div>
-  <button class="device-restart" id="s2-run">↻ 다시 보기</button>
 </section>
 
 <!-- ============ S3 : PERSONALITY ============ -->
@@ -1023,6 +1022,7 @@
         <div class="device-btns"></div>
         <div class="device-power"></div>
       </div>
+      <button class="device-restart" id="scr-reset">↻ 다시 보기</button>
     </div>
 
     <div class="section-meta reveal-meta">
@@ -1041,7 +1041,6 @@
       </div>
     </div>
   </div>
-  <button class="device-restart" id="scr-reset">↻ 다시 보기</button>
 </section>
 
 <!-- ============ S6 : DEPRESSION ML ============ -->
@@ -1070,8 +1069,8 @@
         <div class="meta-d">StratifiedGroupKFold</div>
       </div>
       <div class="meta-item">
-        <div class="meta-h">SHAP 기반 해석</div>
-        <div class="meta-d">상위 3개 특징으로 AUC 0.653</div>
+        <div class="meta-h">최고 AUC 0.685</div>
+        <div class="meta-d">top-40 특징 · XGBoost</div>
       </div>
       </div>
     </div>
