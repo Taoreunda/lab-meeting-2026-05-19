@@ -222,10 +222,12 @@
   }
   /* Restart button centered horizontally on the device column.
      position:absolute inside .section-stage so left:50% aligns with the
-     device's horizontal center, not the page center. */
+     device's horizontal center, not the page center. bottom inset
+     keeps the pill within the viewport (sections extend ~48px past
+     viewport-bottom due to scroll-margin-top: 48). */
   .device-restart {
     position: absolute;
-    bottom: -8px; left: 50%;
+    bottom: 36px; left: 50%;
     transform: translateX(-50%);
     display: inline-flex; align-items: center; gap: 6px;
     background: rgba(255, 255, 255, 0.86);
@@ -531,10 +533,10 @@
   .device-macbook .device-frame .iframe-zoom-wrap iframe {
     position: absolute;
     top: 0; left: 0;
-    width: 166.67%;       /* 1 / 0.6 */
-    height: 166.67%;
+    width: 117.65%;       /* 1 / 0.85 */
+    height: 117.65%;
     border: 0;
-    transform: scale(0.6);
+    transform: scale(0.85);
     transform-origin: top left;
   }
   .device-macbook .device-frame iframe:not(.iframe-zoom-wrap iframe) {
