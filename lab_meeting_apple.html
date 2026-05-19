@@ -511,7 +511,28 @@
   .device-macbook .device-frame iframe:not(.iframe-zoom-wrap iframe) {
     flex: 1 1 0; min-height: 0; width: 100%; border: 0;
   }
-  .device-macbook .device-frame .scr-frame {
+  /* Screening-UI zoom-out wrapper — same idea as iframe-zoom-wrap.
+     scr-frame is rendered at ~143% logical size and scaled 0.7× visually,
+     so cards and text have more room to breathe without horizontal scroll. */
+  .device-macbook .device-frame .scr-zoom-wrap {
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+  }
+  .device-macbook .device-frame .scr-zoom-wrap > .scr-frame {
+    position: absolute;
+    top: 0; left: 0;
+    width: 142.86%;       /* 1 / 0.7 */
+    height: 142.86%;
+    transform: scale(0.7);
+    transform-origin: top left;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  /* legacy non-wrapped scr-frame (kept in case other places use it) */
+  .device-macbook .device-frame > .scr-frame {
     flex: 1 1 0; min-height: 0;
     display: flex; flex-direction: column;
     overflow: hidden;
@@ -934,6 +955,7 @@
       <div class="section-stage reveal-stage">
       <div class="device device-macbook device-spacegray scale-macbook s5-device">
         <div class="device-frame">
+          <div class="scr-zoom-wrap">
           <div class="scr-frame">
             <div class="scr-head">
               <div class="logo">Dabom <span class="sub">SOCIAL ISOLATION ASSESSMENT</span></div>
@@ -963,6 +985,7 @@
               <button class="primary hidden" id="scr-play" aria-hidden="true">▶ Play</button>
               <button id="scr-next" class="hidden" aria-hidden="true">다음 →</button>
             </div>
+          </div>
           </div>
         </div>
         <div class="device-stripe"></div>
