@@ -219,6 +219,36 @@
     display: flex; align-items: center; justify-content: center;
     min-height: 0; height: 100%;
   }
+  /* Restart button anchored at the bottom of the section, centered.
+     Lives at the section level (not stage) so it sits below the device's
+     visual bounding box, never overlapping the screen content. */
+  .device-restart {
+    position: absolute;
+    /* Section has scroll-margin-top: 48px, so when snapped it extends 48px
+       below the viewport bottom. Add 48 here so the button still appears
+       within the visible viewport area. */
+    bottom: 62px; left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-mid);
+    font-family: var(--display);
+    font-size: 14px;
+    letter-spacing: -0.224px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 7px 18px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: color 0.2s var(--ease), transform 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+    z-index: 4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  section.slide.alt .device-restart { background: rgba(245, 245, 247, 0.86); }
+  .device-restart:hover { color: var(--accent); transform: translateX(-50%) translateY(-1px); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10); }
+  .device-restart:active { transform: translateX(-50%) scale(0.95); }
+  .device-restart:disabled { opacity: 0.55; cursor: default; }
 
   /* Section meta — cards stacked vertically */
   .section-meta {
@@ -760,7 +790,6 @@
               <span><i style="background:#af52de"></i>인물</span>
             </div>
             <div class="chat-body" id="s1-body"></div>
-            <button class="chat-play restart" id="s1-play">↻ 다시 보기</button>
           </div>
           <div class="chat-input">
             <input id="s1-input" placeholder="메시지 입력" autocomplete="off" />
@@ -796,6 +825,7 @@
       </div>
     </div>
   </div>
+  <button class="device-restart" id="s1-play">↻ 다시 보기</button>
 </section>
 
 <!-- ============ S2 : AMT ============ -->
@@ -828,7 +858,6 @@
               <span class="s wait" data-c="ppl">인물</span>
               <span class="s wait" data-c="sense">감각</span>
             </div>
-            <button class="chat-play restart" id="s2-run">↻ 다시 보기</button>
           </div>
           <div class="chat-input">
             <input id="s2-input" placeholder="기억을 입력하세요" autocomplete="off" disabled />
@@ -860,6 +889,7 @@
       </div>
     </div>
   </div>
+  <button class="device-restart" id="s2-run">↻ 다시 보기</button>
 </section>
 
 <!-- ============ S3 : PERSONALITY ============ -->
@@ -980,8 +1010,7 @@
                 <div class="sc-items" id="sc-items"></div>
               </div>
             </div>
-            <div class="scr-controls">
-              <button id="scr-reset" class="restart-link">↻ 다시 보기</button>
+            <div class="scr-controls hidden">
               <button class="primary hidden" id="scr-play" aria-hidden="true">▶ Play</button>
               <button id="scr-next" class="hidden" aria-hidden="true">다음 →</button>
             </div>
@@ -1012,6 +1041,7 @@
       </div>
     </div>
   </div>
+  <button class="device-restart" id="scr-reset">↻ 다시 보기</button>
 </section>
 
 <!-- ============ S6 : DEPRESSION ML ============ -->
