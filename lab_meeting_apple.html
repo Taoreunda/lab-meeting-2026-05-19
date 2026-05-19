@@ -155,7 +155,7 @@
     width: 100%; height: 100%;
     display: grid;
     grid-template-rows: auto 1fr;
-    gap: 32px;
+    gap: 24px;
     align-items: stretch;
   }
 
@@ -209,11 +209,11 @@
   section.slide:nth-of-type(even) .section-stage { order: 2; }
   section.slide:nth-of-type(even) .section-meta { order: 1; }
   /* Wide-device sections (desktop-shape) — give device column more weight */
-  section#s3 .section-body { grid-template-columns: minmax(0, 0.35fr) minmax(0, 1.65fr) !important; }
-  section#s5 .section-body { grid-template-columns: minmax(0, 0.35fr) minmax(0, 1.65fr) !important; }
+  section#s3 .section-body { grid-template-columns: minmax(0, 0.22fr) minmax(0, 1.78fr) !important; gap: 32px !important; }
+  section#s5 .section-body { grid-template-columns: minmax(0, 0.22fr) minmax(0, 1.78fr) !important; gap: 32px !important; }
   section#s6 .section-body { grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.7fr) !important; }
   /* S3 & S5 — MacBook needs a wider device column */
-  section#s3, section#s5 { padding: 40px 28px 28px; }
+  section#s3, section#s5 { padding: 28px 24px 20px; }
 
   .section-stage {
     display: flex; align-items: center; justify-content: center;
@@ -272,7 +272,7 @@
       drop-shadow(0 8px 16px rgba(0, 0, 0, 0.10));
   }
   .device.scale-macbook {
-    --dev-scale: 1.55;
+    --dev-scale: 1.72;
     transform: translateY(var(--device-py, 0px)) scale(var(--dev-scale));
     transform-origin: center center;
     margin: 0 auto;
@@ -573,15 +573,15 @@
     --s-fail: #ff9500; --s-fail-bg: #fff4e6;
     background: var(--s-bg); color: var(--s-text); font-family: var(--korean);
   }
-  .scr-head { padding: 18px 26px; background: var(--s-card); border-bottom: 1px solid var(--s-border); display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
-  .scr-head .logo { font-weight: 700; color: var(--s-primary); font-size: 18px; }
-  .scr-head .logo .sub { font-size: 11.5px; letter-spacing: 1.5px; color: var(--s-mid); font-weight: 400; margin-left: 8px; }
-  .scr-head .badges { display: flex; gap: 10px; }
-  .scr-head .ub { padding: 7px 14px; border: 1px solid var(--s-border); border-radius: 980px; font-size: 13px; color: var(--s-mid); cursor: pointer; }
+  .scr-head { padding: 10px 22px; background: var(--s-card); border-bottom: 1px solid var(--s-border); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .scr-head .logo { font-weight: 700; color: var(--s-primary); font-size: 15px; }
+  .scr-head .logo .sub { font-size: 10px; letter-spacing: 1.5px; color: var(--s-mid); font-weight: 400; margin-left: 6px; }
+  .scr-head .badges { display: flex; gap: 8px; }
+  .scr-head .ub { padding: 5px 12px; border: 1px solid var(--s-border); border-radius: 980px; font-size: 11.5px; color: var(--s-mid); cursor: pointer; }
   .scr-head .ub.active { color: var(--s-primary); border-color: var(--s-primary); background: rgba(0,122,255,0.05); }
-  .scr-body { display: grid; grid-template-columns: 1fr 1.05fr; gap: 16px; padding: 14px 18px; min-height: 0; }
-  .scr-chat { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 460px; font-size: 15px; }
-  .scr-msg { padding: 12px 18px; border-radius: 20px; max-width: 84%; line-height: 1.45; animation: msgIn 0.55s var(--ease); font-size: 15px; }
+  .scr-body { display: grid; grid-template-columns: 1fr 1.05fr; gap: 14px; padding: 12px 16px; min-height: 0; }
+  .scr-chat { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 460px; font-size: 13px; }
+  .scr-msg { padding: 10px 14px; border-radius: 18px; max-width: 86%; line-height: 1.45; animation: msgIn 0.55s var(--ease); font-size: 13px; }
   @keyframes msgIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   .scr-msg.bot { background: var(--s-bot); align-self: flex-start; border-bottom-left-radius: 4px; color: var(--s-text); }
   .scr-msg.user { background: var(--s-user); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
@@ -589,12 +589,12 @@
   .scr-typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--s-mid); margin: 0 1px; animation: dots 1.2s infinite; }
   .scr-typing span:nth-child(2) { animation-delay: 0.2s; }
   .scr-typing span:nth-child(3) { animation-delay: 0.4s; }
-  .scr-scorecard { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 16px; padding: 20px; overflow-y: auto; max-height: 460px; font-size: 15px; }
-  .sc-progress { display: flex; align-items: center; gap: 12px; font-size: 14px; margin-bottom: 14px; }
+  .scr-scorecard { background: var(--s-card); border: 1px solid var(--s-border); border-radius: 14px; padding: 14px; overflow-y: auto; max-height: 460px; font-size: 13px; }
+  .sc-progress { display: flex; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 10px; }
   .sc-progress .label { color: var(--s-text); font-weight: 600; }
-  .sc-progress .bar { flex: 1; height: 8px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden; }
+  .sc-progress .bar { flex: 1; height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
   .sc-progress .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--s-primary), var(--s-success)); transition: width 0.7s var(--ease); }
-  .sc-progress .pct { color: var(--s-mid); font-family: var(--mono); font-size: 13px; }
+  .sc-progress .pct { color: var(--s-mid); font-family: var(--mono); font-size: 11px; }
   .sc-criteria { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; align-items: start; grid-auto-rows: min-content; }
   .sc-crit { border: 1px solid var(--s-border); border-radius: 8px; padding: 5px 9px; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: all 0.5s var(--ease); gap: 6px; }
   .sc-crit .nm { font-weight: 600; white-space: nowrap; }
@@ -612,8 +612,8 @@
   .sc-item .verdict { display: inline-block; margin-top: 5px; padding: 2px 8px; border-radius: 980px; font-size: 9.5px; }
   .sc-item .verdict.met { background: var(--s-success); color: #fff; }
   .sc-item .verdict.unmet { background: var(--s-fail); color: #fff; }
-  .scr-controls { padding: 12px 20px; border-top: 1px solid var(--s-border); display: flex; gap: 10px; justify-content: flex-end; background: var(--s-card); }
-  .scr-controls button { padding: 7px 18px; border: 1px solid var(--s-primary); background: #fff; color: var(--s-primary); border-radius: 980px; font-size: 13.5px; cursor: pointer; font-family: var(--korean); font-weight: 500; transition: all 0.25s var(--ease); }
+  .scr-controls { padding: 9px 18px; border-top: 1px solid var(--s-border); display: flex; gap: 8px; justify-content: flex-end; background: var(--s-card); }
+  .scr-controls button { padding: 6px 16px; border: 1px solid var(--s-primary); background: #fff; color: var(--s-primary); border-radius: 980px; font-size: 12.5px; cursor: pointer; font-family: var(--korean); font-weight: 500; transition: all 0.25s var(--ease); }
   .scr-controls button.primary { background: var(--s-primary); color: #fff; }
   .scr-controls button:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,122,255,0.2); }
   .scr-controls button.playing { background: var(--s-fail); border-color: var(--s-fail); color: #fff; }
